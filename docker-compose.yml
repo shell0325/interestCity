@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  nuxt:
+    build: ./front/
+    ports:
+      - 8080:8080
+    volumes:
+      - ./front:/workspace
+    platform: linux/amd64
+    working_dir: /workspace
+    command: yarn dev
+  api:
+    build:
+      context: ./api
+      args:
+        app_env: "development"
+    links:
+      - 'db'
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./api:/src
+      - ./api:/node_modules
+    platform: linux/amd64
+    tty: true
+    container_name: api
+
+  db:
+    build:
+      context: .
+      dockerfile: ./db/Dockerfile
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci
+    restart: always
+    hostname: db
+    platform: linux/amd64
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: user
+      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: interestCityDB
+    volumes:
+      - './db:/config'
+    ports:
+      - 3306:3306
+    container_name: db

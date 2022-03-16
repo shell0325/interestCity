@@ -22,9 +22,9 @@ export class UserService {
   }
 
   //user作成処理
-  async createUser(userData: createUserRequestDto): Promise<UserResponseDto> {
+  async createUser(userData: createUserRequestDto) {
     //emailが使用可能かどうか確認
-    const findUser = await this.findUser(userData.email);
+    const findUser = await this._userRepository.findOne({ where: { email: userData.email } });
     if (findUser) {
       throw new BadRequestException('このメールアドレスは使用されています');
     }
@@ -36,9 +36,9 @@ export class UserService {
   }
 
   //user取得処理
-  async findUser(email: string) {
+  async findUser(email: string): Promise<User> {
     //emailを使用してユーザーを特定
-    const user = await this._userRepository.findOne({ where: { email:email } });
+    const user = await this._userRepository.findOne({ where: { email: email } });
     if (!user) throw new NotFoundException();
     return user;
   }

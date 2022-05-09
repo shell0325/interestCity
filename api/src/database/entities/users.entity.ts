@@ -9,13 +9,13 @@ import {
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn()
-  id!: number;
+  id: number;
 
   @Column('varchar', { name: 'username', length: 20 })
-  username!: string;
+  username: string;
 
   @Column('varchar', { name: 'email', length: 45 })
-  email!: string;
+  email: string;
 
   @Column('varchar', { name: 'password', length: 100 })
   password: string;

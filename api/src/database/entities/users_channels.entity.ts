@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Channel } from './channels.entity';
+import { Genre } from './genres.entity';
 import { User } from './users.entity';
 
 @Entity({ name: 'users_channels' })
@@ -30,6 +31,14 @@ export class Users_Channels {
   })
   @JoinColumn({ name: 'channel_id' })
   channel: Channel;
+
+  @Column('tinyint', { name: 'genre_id' })
+  genreId: number;
+  @ManyToOne(() => Genre, {
+    cascade: true,
+  })
+  @JoinColumn({ name: 'genre_id' })
+  genre: Genre;
 
   @CreateDateColumn({ name: 'created_at' })
   readonly createdAt!: Date;

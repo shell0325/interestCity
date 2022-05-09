@@ -4,15 +4,18 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Channels_Tags } from './channels_tags.entity';
 import { Genre } from './genres.entity';
+import { Users_Channels } from './users_channels.entity';
 
 @Entity({ name: 'channels' })
 export class Channel {
   @PrimaryGeneratedColumn()
-  id!: number;
+  id: number;
 
   @Column('varchar', { name: 'name', length: 45 })
   name: string;
@@ -27,6 +30,12 @@ export class Channel {
   })
   @JoinColumn({ name: 'genre_id' })
   genre: Genre;
+
+  @OneToMany(() => Users_Channels, (usersChannels) => usersChannels.channel)
+  user: Users_Channels[];
+
+  @OneToMany(() => Channels_Tags, (channelsTags) => channelsTags.channel)
+  tag: Channels_Tags[];
 
   @CreateDateColumn({ name: 'created_at' })
   readonly createdAt!: Date;

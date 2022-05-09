@@ -4,30 +4,25 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Bookmark } from './bookmarks.entity';
 import { Channel } from './channels.entity';
-import { Like } from './likes.entity';
-import { User } from './users.entity';
+import { Genre } from './genres.entity';
+import { Tag } from './tags.entity';
 
-@Entity({ name: 'master_comments' })
-export class Master_Comment {
+@Entity({ name: 'channels_tags' })
+export class Channels_Tags {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('text', { name: 'comment' })
-  comment: Text[];
-
-  @Column('tinyint', { name: 'user_id' })
-  userId: number;
-  @ManyToOne(() => User, {
+  @Column('tinyint', { name: 'tag_id' })
+  tagId: number;
+  @ManyToOne(() => Tag, {
     cascade: true,
   })
-  @JoinColumn({ name: 'user_id' })
-  user: User;
+  @JoinColumn({ name: 'tag_id' })
+  tag: Tag;
 
   @Column('tinyint', { name: 'channel_id' })
   channelId: number;
@@ -37,11 +32,13 @@ export class Master_Comment {
   @JoinColumn({ name: 'channel_id' })
   channel: Channel;
 
-  @OneToMany(() => Like, (likes) => likes.master_comment)
-  likes: Like[];
-
-  @OneToMany(() => Bookmark, (bookmark) => bookmark.master_comment)
-  bookmark: Bookmark[];
+  @Column('tinyint', { name: 'genre_id' })
+  genreId: number;
+  @ManyToOne(() => Genre, {
+    cascade: true,
+  })
+  @JoinColumn({ name: 'genre_id' })
+  genre: Genre;
 
   @CreateDateColumn({ name: 'created_at' })
   readonly createdAt!: Date;

@@ -9,7 +9,7 @@ import {
 @Entity({ name: 'genres' })
 export class Genre {
   @PrimaryGeneratedColumn()
-  id!: number;
+  id: number;
 
   @Column('varchar', { name: 'name', length: 45 })
   name!: string;

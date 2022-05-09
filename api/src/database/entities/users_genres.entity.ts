@@ -7,21 +7,13 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Tag } from './tags.entity';
+import { Genre } from './genres.entity';
 import { User } from './users.entity';
 
-@Entity({ name: 'users_tags' })
-export class Users_Tags {
+@Entity({ name: 'users_genres' })
+export class Users_Genres {
   @PrimaryGeneratedColumn()
-  id!: number;
-
-  @Column('tinyint', { name: 'tag_id' })
-  tagId: number;
-  @ManyToOne(() => Tag, {
-    cascade: true,
-  })
-  @JoinColumn({ name: 'tag_id' })
-  tag: Tag;
+  id: number;
 
   @Column('tinyint', { name: 'user_id' })
   userId: number;
@@ -30,6 +22,14 @@ export class Users_Tags {
   })
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @Column('tinyint', { name: 'genre_id' })
+  genreId: number;
+  @ManyToOne(() => Genre, {
+    cascade: true,
+  })
+  @JoinColumn({ name: 'genre_id' })
+  genre: Genre;
 
   @CreateDateColumn({ name: 'created_at' })
   readonly createdAt!: Date;

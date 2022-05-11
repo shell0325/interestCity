@@ -24,7 +24,7 @@ export class UserController {
     return new OkResponse(responseData);
   }
 
-  @Post('register')
+  @Post()
   async createUser(@Body() users: createUserRequestDto): Promise<CreatedResponse> {
     let responseData: UserResponseDto;
 

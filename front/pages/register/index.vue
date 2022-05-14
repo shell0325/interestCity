@@ -62,6 +62,7 @@
             username === ''
           "
           class="text-caption addChannel mr-0 px-0"
+          @click="userRegister()"
         >
           ユーザー登録
         </v-btn>
@@ -73,6 +74,7 @@
 </template>
 
 <script>
+import axios from 'axios'
 import { validationMixin } from 'vuelidate'
 import { required, email } from 'vuelidate/lib/validators'
 export default {
@@ -115,6 +117,24 @@ export default {
   methods: {
     login() {
       this.$router.push('/login')
+    },
+    async userRegister() {
+      if (this.$refs.form.validate()) {
+        await axios
+          .post('http://localhost:3000/user', {
+            username: this.username,
+            email: this.email,
+            password: this.password,
+          })
+          .then((data) => {
+            if (
+              data.data.data.user === 'このメールアドレスは使用されています'
+            ) {
+              alert('このメールアドレスは既に登録されています')
+            }
+            this.$router.push('/login')
+          })
+      }
     },
   },
 }

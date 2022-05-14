@@ -4,7 +4,7 @@ import { UsersResponseDto } from '../dto/users.response.dto';
 
 export interface IUserService {
   getUsers(): Promise<UsersResponseDto>;
-  createUser(userData: createUserRequestDto): Promise<UserResponseDto>;
+  createUser(userData: createUserRequestDto): Promise<{ user: string } | UserResponseDto>;
   findUser(email: string): Promise<UserResponseDto>;
   getPasswordHash(password: string): string;
 }

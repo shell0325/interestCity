@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/database/entities/users.entity';
 import { Repository } from 'typeorm';
@@ -23,11 +23,11 @@ export class UserService implements IUserService {
   }
 
   //user作成処理
-  async createUser(userData: createUserRequestDto): Promise<UserResponseDto> {
+  async createUser(userData: createUserRequestDto): Promise<{ user: string } | UserResponseDto> {
     //emailが使用可能かどうか確認
-    const findUser = await this._userRepository.findOne({ where: { email: userData.email } });
-    if (findUser) {
-      throw new BadRequestException('このメールアドレスは使用されています');
+    const findUser = await this._userRepository.find({ where: { email: userData.email } });
+    if (findUser.length !== 0) {
+      return { user: 'このメールアドレスは使用されています' };
     }
     //passwordをハッシュ化
     userData.password = this.getPasswordHash(userData.password);

@@ -18,7 +18,9 @@ export default {
   css: [],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: [],
+  plugins: [
+    { src: '~/plugins/vee-validate', ssr: true }
+  ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
@@ -37,11 +39,11 @@ export default {
     '@nuxtjs/axios',
     // https://go.nuxtjs.dev/pwa
     '@nuxtjs/pwa',
+    '@nuxtjs/auth-next'
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
-    // Workaround to avoid enforcing hard-coded localhost:3000: https://github.com/nuxt-community/axios-module/issues/308
     baseURL: 'http://localhost:3000',
   },
 
@@ -74,11 +76,53 @@ export default {
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {},
 
+  router: {
+    middleware: ['auth']
+  },
+
+  // plugins: [
+  //   { src: '~/plugins/vee-validate', ssr: true }
+  // ],
+
   proxy: {
     '/api': {
       target: 'http://localhost',
       pathRewrite: {
         '^/api': '/'
+      }
+    }
+  },
+
+  auth: {
+    redirect: {
+      login: '/login',   // 未ログイン時に認証ルートへアクセスした際のリダイレクトURL
+      logout: '/login',  // ログアウト時のリダイレクトURL
+      // callback: 'genre',   // Oauth認証等で必要となる コールバックルート
+      home: '/channel',         // ログイン後のリダイレクトURL
+    },
+
+    strategies: {
+      local: {
+        token: { property: 'access_token' },
+        user: {
+          property: false
+        },
+        endpoints: {
+          login: {
+            url: '/auth/login',
+            method: 'post',
+            propertyName: 'access_token'
+          },
+          logout: {
+            url: '/user/logout',
+            method: 'post'
+          },
+          user: {
+            url: '/auth/profile',
+            method: 'get',
+            propertyName: false
+          },
+        },
       }
     }
   },

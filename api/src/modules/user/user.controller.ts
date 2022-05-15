@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Res } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CommonResponse, CreatedResponse, OkResponse } from 'src/common/types/response';
 import { UsersResponseDto } from './dto/users.response.dto';
 import { createUserRequestDto } from './dto/create-user.request.dto';
-import { UserResponseDto } from './dto/user.response.dto';
+import { Response } from 'express';
 
 @Controller('/user')
 export class UserController {
@@ -30,5 +30,13 @@ export class UserController {
     const responseData = await this._userService.findUser(email);
 
     return new OkResponse(responseData);
+  }
+  @Post('logout')
+  async logout(@Res({ passthrough: true }) response: Response) {
+    response.clearCookie('jwt');
+
+    return {
+      message: 'success',
+    };
   }
 }

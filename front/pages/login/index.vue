@@ -31,8 +31,6 @@
         </v-row>
         <v-btn @click="login()">ログイン</v-btn>
         <v-btn @click="register()">会員登録</v-btn>
-        <v-btn @click="console()">test</v-btn>
-        <v-btn @click="logout()">logout</v-btn>
       </v-container>
     </v-form>
   </v-app>
@@ -70,14 +68,6 @@ export default {
       return errors
     },
   },
-  created() {
-    if (this.$auth.loggedIn) {
-      this.$router.push({
-        path: '/channel',
-      })
-    }
-  },
-
   mounted() {
     this.email = ''
     this.password = ''
@@ -97,15 +87,8 @@ export default {
         console.log(response)
         return response
       } catch (e) {
-        // alert(e)
         alert('パスワードもしくはEmailが間違っています')
       }
-    },
-    console() {
-      console.log(this.$auth.user)
-    },
-    logout() {
-      this.$auth.logout()
     },
   },
 }

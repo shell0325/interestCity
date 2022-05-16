@@ -3,11 +3,12 @@ import { CommonResponse, CreatedResponse, OkResponse } from 'src/common/types/re
 import { createGenreRequestDto } from './dto/create-genre.request.dto';
 import { GenreResponseDto } from './dto/genre.response.dto';
 import { GenresResponseDto } from './dto/genres.response.dto';
+import { registerGenreRequestDto } from './dto/register-genre.request.dto';
 import { GenreService } from './genre.service';
 
 @Controller('genre')
 export class GenreController {
-    constructor(private readonly _genreService: GenreService) {}
+  constructor(private readonly _genreService: GenreService) {}
   @Get()
   async getGenre(): Promise<CommonResponse> {
     let responseData: GenresResponseDto;
@@ -17,7 +18,6 @@ export class GenreController {
     return new OkResponse(responseData);
   }
 
-
   @Post()
   async createGenre(@Body() genres: createGenreRequestDto) {
     let responseData: GenreResponseDto;
@@ -26,5 +26,9 @@ export class GenreController {
     return new CreatedResponse(responseData);
   }
 
-
+  @Post('register')
+  async registerGenre(@Body() genreData: registerGenreRequestDto) {
+    const result = await this._genreService.registerGenre(genreData);
+    return result;
+  }
 }

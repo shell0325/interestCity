@@ -4,6 +4,7 @@ import { Bookmark } from 'src/database/entities/bookmarks.entity';
 import { Channel } from 'src/database/entities/channels.entity';
 import { Like } from 'src/database/entities/likes.entity';
 import { Master_Comment } from 'src/database/entities/master_comments.entity';
+import { Sub_Comment } from 'src/database/entities/sub_comments.entity';
 import { Users_Channels } from 'src/database/entities/users_channels.entity';
 import { DeleteResult, Repository } from 'typeorm';
 import { BookmarkResponseDto } from './dto/bookmark.response.dto';
@@ -17,9 +18,11 @@ import { editCommentRequestDto } from './dto/edit-comment.request.dto';
 import { findBookmarkRequestDto } from './dto/find-bookmark.request.dto';
 import { joinChannelRequestDto } from './dto/join-channel.request.dto';
 import { LikeResponseDto } from './dto/like.response.dto';
+import { postThreadCommentRequestDto } from './dto/post-thread-comment.dto';
 import { bookmarkCommentRequestDto } from './dto/register-bookmark-comment.request.dto';
 import { likesCommentRequestDto } from './dto/register-likes-comment.request.dto';
 import { sendCommentRequestDto } from './dto/sendComment.request.dto';
+import { SubCommentResponseDto } from './dto/sub-comment.response.dto';
 import { UsersChannelResponseDto } from './dto/user-channel.response.dto';
 
 @Injectable()
@@ -35,6 +38,8 @@ export class ChannelService {
     private readonly _likesRepository: Repository<Like>,
     @InjectRepository(Bookmark)
     private readonly _bookmark: Repository<Bookmark>,
+    @InjectRepository(Sub_Comment)
+    private readonly _subComment: Repository<Sub_Comment>,
   ) {}
 
   async createChannel(
@@ -168,5 +173,12 @@ export class ChannelService {
       relations: ['master_comment', 'user'],
     });
     return { bookmarks };
+  }
+
+  async postThreadComment(
+    subCommentData: postThreadCommentRequestDto,
+  ): Promise<SubCommentResponseDto> {
+    const subComment = await this._subComment.save(subCommentData);
+    return { subComment };
   }
 }

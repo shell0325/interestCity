@@ -12,6 +12,7 @@ import { Server, Socket } from 'socket.io';
 import { ChannelService } from './channel.service';
 import { CommentResponseDto } from './dto/comment.response.dto';
 import { editCommentRequestDto } from './dto/edit-comment.request.dto';
+import { findBookmarkRequestDto } from './dto/find-bookmark.request.dto';
 import { joinChannelRequestDto } from './dto/join-channel.request.dto';
 import { bookmarkCommentRequestDto } from './dto/register-bookmark-comment.request.dto';
 import { likesCommentRequestDto } from './dto/register-likes-comment.request.dto';
@@ -83,6 +84,12 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   async bookmarkComment(client: Socket, bookmarkCommentData: bookmarkCommentRequestDto) {
     const bookmarkComment = await this._channelService.bookmarkComment(bookmarkCommentData);
     this.server.emit('commentData', bookmarkComment);
+  }
+
+  @SubscribeMessage('findBookmarkComment')
+  async findBookmarkComment(client: Socket, findBookmarkData: findBookmarkRequestDto) {
+    const bookmarkComment = await this._channelService.findBookmarkComments(findBookmarkData);
+    this.server.emit('bookmarkCommentData', bookmarkComment);
   }
 
   afterInit(server: Server) {

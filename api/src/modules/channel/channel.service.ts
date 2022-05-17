@@ -7,12 +7,14 @@ import { Master_Comment } from 'src/database/entities/master_comments.entity';
 import { Users_Channels } from 'src/database/entities/users_channels.entity';
 import { DeleteResult, Repository } from 'typeorm';
 import { BookmarkResponseDto } from './dto/bookmark.response.dto';
+import { BookmarksResponseDto } from './dto/bookmarks.response.dto';
 import { ChannelResponseDto } from './dto/channel.response.dto';
 import { ChannelsResponseDto } from './dto/channels.response.dto';
 import { CommentResponseDto } from './dto/comment.response.dto';
 import { CommentsResponseDto } from './dto/comments.response.dto';
 import { createChannelRequestDto } from './dto/create-channel.request.dto';
 import { editCommentRequestDto } from './dto/edit-comment.request.dto';
+import { findBookmarkRequestDto } from './dto/find-bookmark.request.dto';
 import { joinChannelRequestDto } from './dto/join-channel.request.dto';
 import { LikeResponseDto } from './dto/like.response.dto';
 import { bookmarkCommentRequestDto } from './dto/register-bookmark-comment.request.dto';
@@ -153,5 +155,18 @@ export class ChannelService {
       const bookmark = await this._bookmark.save(bookmarkCommentData);
       return { bookmark };
     }
+  }
+
+  async findBookmarkComments(
+    findBookmarkData: findBookmarkRequestDto,
+  ): Promise<BookmarksResponseDto> {
+    const bookmarks = await this._bookmark.find({
+      where: {
+        genreId: findBookmarkData.genreId,
+        userId: findBookmarkData.userId,
+      },
+      relations: ['master_comment', 'user'],
+    });
+    return { bookmarks };
   }
 }

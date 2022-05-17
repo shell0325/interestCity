@@ -1,10 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Bookmark } from 'src/database/entities/bookmarks.entity';
 import { Channel } from 'src/database/entities/channels.entity';
 import { Like } from 'src/database/entities/likes.entity';
 import { Master_Comment } from 'src/database/entities/master_comments.entity';
 import { Users_Channels } from 'src/database/entities/users_channels.entity';
 import { DeleteResult, Repository } from 'typeorm';
+import { BookmarkResponseDto } from './dto/bookmark.response.dto';
 import { ChannelResponseDto } from './dto/channel.response.dto';
 import { ChannelsResponseDto } from './dto/channels.response.dto';
 import { CommentResponseDto } from './dto/comment.response.dto';
@@ -13,6 +15,7 @@ import { createChannelRequestDto } from './dto/create-channel.request.dto';
 import { editCommentRequestDto } from './dto/edit-comment.request.dto';
 import { joinChannelRequestDto } from './dto/join-channel.request.dto';
 import { LikeResponseDto } from './dto/like.response.dto';
+import { bookmarkCommentRequestDto } from './dto/register-bookmark-comment.request.dto';
 import { likesCommentRequestDto } from './dto/register-likes-comment.request.dto';
 import { sendCommentRequestDto } from './dto/sendComment.request.dto';
 import { UsersChannelResponseDto } from './dto/user-channel.response.dto';
@@ -28,6 +31,8 @@ export class ChannelService {
     private readonly _masterCommentRepository: Repository<Master_Comment>,
     @InjectRepository(Like)
     private readonly _likesRepository: Repository<Like>,
+    @InjectRepository(Bookmark)
+    private readonly _bookmark: Repository<Bookmark>,
   ) {}
 
   async createChannel(
@@ -126,6 +131,27 @@ export class ChannelService {
     } else {
       const like = await this._likesRepository.save(likesCountData);
       return { like };
+    }
+  }
+
+  async bookmarkComment(
+    bookmarkCommentData: bookmarkCommentRequestDto,
+  ): Promise<DeleteResult | BookmarkResponseDto> {
+    const bookmarkComment = await this._bookmark.find({
+      where: {
+        master_commentId: bookmarkCommentData.master_commentId,
+        userId: bookmarkCommentData.userId,
+      },
+    });
+    if (bookmarkComment.length !== 0) {
+      const deleteLikes = await this._bookmark.delete({
+        master_commentId: bookmarkCommentData.master_commentId,
+        userId: bookmarkCommentData.userId,
+      });
+      return deleteLikes;
+    } else {
+      const bookmark = await this._bookmark.save(bookmarkCommentData);
+      return { bookmark };
     }
   }
 }

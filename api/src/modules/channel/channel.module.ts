@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Bookmark } from 'src/database/entities/bookmarks.entity';
 import { Channel } from 'src/database/entities/channels.entity';
 import { Like } from 'src/database/entities/likes.entity';
 import { Master_Comment } from 'src/database/entities/master_comments.entity';
@@ -9,7 +10,7 @@ import { ChannelGateway } from './channel.gateway';
 import { ChannelService } from './channel.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Channel, Users_Channels, Master_Comment, Like])],
+  imports: [TypeOrmModule.forFeature([Channel, Users_Channels, Master_Comment, Like, Bookmark])],
   controllers: [ChannelController],
   providers: [ChannelService, ChannelGateway],
   exports: [ChannelService],

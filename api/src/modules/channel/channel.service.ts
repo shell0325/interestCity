@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Channel } from 'src/database/entities/channels.entity';
+import { Master_Comment } from 'src/database/entities/master_comments.entity';
 import { Users_Channels } from 'src/database/entities/users_channels.entity';
 import { DeleteResult, Repository } from 'typeorm';
 import { ChannelResponseDto } from './dto/channel.response.dto';
 import { ChannelsResponseDto } from './dto/channels.response.dto';
+import { CommentResponseDto } from './dto/comment.response.dto';
 import { createChannelRequestDto } from './dto/create-channel.request.dto';
 import { joinChannelRequestDto } from './dto/join-channel.request.dto';
+import { sendCommentRequestDto } from './dto/sendComment.request.dto';
 import { UsersChannelResponseDto } from './dto/user-channel.response.dto';
 
 @Injectable()
@@ -16,6 +19,8 @@ export class ChannelService {
     private readonly _channelRepository: Repository<Channel>,
     @InjectRepository(Users_Channels)
     private readonly _usersChannelsRepository: Repository<Users_Channels>,
+    @InjectRepository(Master_Comment)
+    private readonly _masterCommentRepository: Repository<Master_Comment>,
   ) {}
 
   async createChannel(
@@ -55,5 +60,10 @@ export class ChannelService {
   async exitChannel(exitChannelId: number): Promise<DeleteResult> {
     const exitChannel = await this._usersChannelsRepository.delete({ channelId: exitChannelId });
     return exitChannel;
+  }
+
+  async sendComment(commentData: sendCommentRequestDto): Promise<CommentResponseDto> {
+    const comment = await this._masterCommentRepository.save(commentData);
+    return { comment };
   }
 }

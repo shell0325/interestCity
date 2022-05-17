@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Channel } from 'src/database/entities/channels.entity';
+import { Like } from 'src/database/entities/likes.entity';
 import { Master_Comment } from 'src/database/entities/master_comments.entity';
 import { Users_Channels } from 'src/database/entities/users_channels.entity';
 import { DeleteResult, Repository } from 'typeorm';
@@ -11,6 +12,8 @@ import { CommentsResponseDto } from './dto/comments.response.dto';
 import { createChannelRequestDto } from './dto/create-channel.request.dto';
 import { editCommentRequestDto } from './dto/edit-comment.request.dto';
 import { joinChannelRequestDto } from './dto/join-channel.request.dto';
+import { LikeResponseDto } from './dto/like.response.dto';
+import { likesCommentRequestDto } from './dto/register-likes-comment.request.dto';
 import { sendCommentRequestDto } from './dto/sendComment.request.dto';
 import { UsersChannelResponseDto } from './dto/user-channel.response.dto';
 
@@ -23,6 +26,8 @@ export class ChannelService {
     private readonly _usersChannelsRepository: Repository<Users_Channels>,
     @InjectRepository(Master_Comment)
     private readonly _masterCommentRepository: Repository<Master_Comment>,
+    @InjectRepository(Like)
+    private readonly _likesRepository: Repository<Like>,
   ) {}
 
   async createChannel(
@@ -101,5 +106,26 @@ export class ChannelService {
       id: master_commentId,
     });
     return deleteComments;
+  }
+
+  async likesComment(
+    likesCountData: likesCommentRequestDto,
+  ): Promise<DeleteResult | LikeResponseDto> {
+    const likesComment = await this._likesRepository.find({
+      where: {
+        master_commentId: likesCountData.master_commentId,
+        userId: likesCountData.userId,
+      },
+    });
+    if (likesComment.length !== 0) {
+      const deleteLikes = await this._likesRepository.delete({
+        master_commentId: likesCountData.master_commentId,
+        userId: likesCountData.userId,
+      });
+      return deleteLikes;
+    } else {
+      const like = await this._likesRepository.save(likesCountData);
+      return { like };
+    }
   }
 }

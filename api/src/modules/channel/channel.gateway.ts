@@ -13,6 +13,7 @@ import { ChannelService } from './channel.service';
 import { CommentResponseDto } from './dto/comment.response.dto';
 import { editCommentRequestDto } from './dto/edit-comment.request.dto';
 import { joinChannelRequestDto } from './dto/join-channel.request.dto';
+import { likesCommentRequestDto } from './dto/register-likes-comment.request.dto';
 import { sendCommentRequestDto } from './dto/sendComment.request.dto';
 
 @WebSocketGateway({
@@ -69,6 +70,12 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   async deleteComment(client: Socket, master_commentId: number) {
     const deleteComments = await this._channelService.deleteComment(master_commentId);
     this.server.emit('deleteCommentData', deleteComments);
+  }
+
+  @SubscribeMessage('likesComment')
+  async likesComment(client: Socket, likesCommentData: likesCommentRequestDto) {
+    const likesCount = await this._channelService.likesComment(likesCommentData);
+    this.server.emit('likesCountData', likesCount);
   }
 
   afterInit(server: Server) {

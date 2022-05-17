@@ -9,6 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChannelService } from './channel.service';
+import { joinChannelRequestDto } from './dto/join-channel.request.dto';
 
 @WebSocketGateway({
   namespace: '/chat',
@@ -26,6 +27,18 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   async findChannel(client: Socket, genreId: number) {
     const channels = await this._channelService.findChannel(genreId);
     this.server.emit('channelData', channels);
+  }
+
+  @SubscribeMessage('joinChannel')
+  async joinChannel(client: Socket, joinChannelData: joinChannelRequestDto) {
+    const joinChannel = await this._channelService.joinChannel(joinChannelData);
+    this.server.emit('joinChannelData', joinChannel);
+  }
+
+  @SubscribeMessage('exitChannel')
+  async exitChannel(client: Socket, exitChannelId: number) {
+    const exitChannel = await this._channelService.exitChannel(exitChannelId);
+    this.server.emit('exitChannelData', exitChannel);
   }
 
   private logger: Logger = new Logger('AppGateway');

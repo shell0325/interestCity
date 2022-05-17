@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Channel } from 'src/database/entities/channels.entity';
 import { Users_Channels } from 'src/database/entities/users_channels.entity';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { ChannelResponseDto } from './dto/channel.response.dto';
 import { ChannelsResponseDto } from './dto/channels.response.dto';
 import { createChannelRequestDto } from './dto/create-channel.request.dto';
+import { joinChannelRequestDto } from './dto/join-channel.request.dto';
 import { UsersChannelResponseDto } from './dto/user-channel.response.dto';
 
 @Injectable()
@@ -44,5 +45,15 @@ export class ChannelService {
     });
     channels.sort((a, b) => a.id - b.id);
     return { channels };
+  }
+
+  async joinChannel(joinChannelData: joinChannelRequestDto): Promise<UsersChannelResponseDto> {
+    const users_channels = await this._usersChannelsRepository.save(joinChannelData);
+    return { users_channels };
+  }
+
+  async exitChannel(exitChannelId: number): Promise<DeleteResult> {
+    const exitChannel = await this._usersChannelsRepository.delete({ channelId: exitChannelId });
+    return exitChannel;
   }
 }

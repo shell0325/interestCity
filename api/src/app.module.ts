@@ -25,7 +25,7 @@ import { TagModule } from './modules/tag/tag.module';
     TagModule,
   ],
   controllers: [AppController],
-  providers: [AppService, TagService],
+  providers: [AppService],
 })
 export class AppModule {
   constructor(private readonly connection: Connection) {}

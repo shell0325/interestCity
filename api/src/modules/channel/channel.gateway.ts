@@ -65,6 +65,12 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     this.server.emit('commentData', comment);
   }
 
+  @SubscribeMessage('deleteComment')
+  async deleteComment(client: Socket, master_commentId: number) {
+    const deleteComments = await this._channelService.deleteComment(master_commentId);
+    this.server.emit('deleteCommentData', deleteComments);
+  }
+
   afterInit(server: Server) {
     this.logger.log('起動しました');
   }

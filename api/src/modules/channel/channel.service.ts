@@ -95,4 +95,11 @@ export class ChannelService {
     const comment = await this._masterCommentRepository.save(updateCommentData);
     return { comment };
   }
+
+  async deleteComment(master_commentId: number): Promise<DeleteResult> {
+    const deleteComments = await this._masterCommentRepository.delete({
+      id: master_commentId,
+    });
+    return deleteComments;
+  }
 }

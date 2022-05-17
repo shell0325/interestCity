@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common';
 import {
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
@@ -9,7 +10,9 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChannelService } from './channel.service';
+import { CommentResponseDto } from './dto/comment.response.dto';
 import { joinChannelRequestDto } from './dto/join-channel.request.dto';
+import { sendCommentRequestDto } from './dto/sendComment.request.dto';
 
 @WebSocketGateway({
   namespace: '/chat',
@@ -39,6 +42,12 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   async exitChannel(client: Socket, exitChannelId: number) {
     const exitChannel = await this._channelService.exitChannel(exitChannelId);
     this.server.emit('exitChannelData', exitChannel);
+  }
+
+  @SubscribeMessage('sendComment')
+  async sendComment(socket: Socket, @MessageBody() commentData: sendCommentRequestDto) {
+    const comment = await this._channelService.sendComment(commentData);
+    this.server.emit('post_message', comment);
   }
 
   private logger: Logger = new Logger('AppGateway');

@@ -7,6 +7,7 @@ import { DeleteResult, Repository } from 'typeorm';
 import { ChannelResponseDto } from './dto/channel.response.dto';
 import { ChannelsResponseDto } from './dto/channels.response.dto';
 import { CommentResponseDto } from './dto/comment.response.dto';
+import { CommentsResponseDto } from './dto/comments.response.dto';
 import { createChannelRequestDto } from './dto/create-channel.request.dto';
 import { joinChannelRequestDto } from './dto/join-channel.request.dto';
 import { sendCommentRequestDto } from './dto/sendComment.request.dto';
@@ -65,5 +66,16 @@ export class ChannelService {
   async sendComment(commentData: sendCommentRequestDto): Promise<CommentResponseDto> {
     const comment = await this._masterCommentRepository.save(commentData);
     return { comment };
+  }
+
+  async getChannelComments(channelId: number): Promise<CommentsResponseDto> {
+    const comments = await this._masterCommentRepository.find({
+      where: {
+        channelId: channelId,
+      },
+      relations: ['user', 'likes', 'bookmark'],
+    });
+    comments.sort((a, b) => a.id - b.id);
+    return { comments };
   }
 }

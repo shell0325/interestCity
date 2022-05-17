@@ -50,6 +50,12 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     this.server.emit('post_message', comment);
   }
 
+  @SubscribeMessage('request_channel_comments')
+  async requestChannelComments(socket: Socket, channelId: number) {
+    const comments = await this._channelService.getChannelComments(channelId);
+    this.server.emit('channel_comments', comments);
+  }
+
   private logger: Logger = new Logger('AppGateway');
 
   afterInit(server: Server) {

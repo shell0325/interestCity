@@ -11,7 +11,6 @@ export class ChannelController {
   @Post()
   async createChannel(@Body() channel: createChannelRequestDto): Promise<CreatedResponse> {
     let responseData: ChannelResponseDto;
-    console.log(channel);
 
     responseData = await this._channelService.createChannel(channel);
     return new CreatedResponse(responseData);

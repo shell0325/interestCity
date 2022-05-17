@@ -3,6 +3,7 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
@@ -19,9 +20,13 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   @WebSocketServer()
   server: Server;
 
-  constructor(
-    private readonly _channelService: ChannelService,
-  ) {}
+  constructor(private readonly _channelService: ChannelService) {}
+
+  @SubscribeMessage('findChannel')
+  async findChannel(client: Socket, genreId: number) {
+    const channels = await this._channelService.findChannel(genreId);
+    this.server.emit('channelData', channels);
+  }
 
   private logger: Logger = new Logger('AppGateway');
 

@@ -4,6 +4,7 @@ import { Channel } from 'src/database/entities/channels.entity';
 import { Users_Channels } from 'src/database/entities/users_channels.entity';
 import { Repository } from 'typeorm';
 import { ChannelResponseDto } from './dto/channel.response.dto';
+import { ChannelsResponseDto } from './dto/channels.response.dto';
 import { createChannelRequestDto } from './dto/create-channel.request.dto';
 import { UsersChannelResponseDto } from './dto/user-channel.response.dto';
 
@@ -31,8 +32,17 @@ export class ChannelService {
       genreId: channelData.genreId,
     };
     const registerUsers_Channels = await this._usersChannelsRepository.save(joinChannelData);
-    console.log(channel)
-    console.log(registerUsers_Channels)
     return { channel: channel, users_channels: registerUsers_Channels };
+  }
+
+  async findChannel(genreId: number): Promise<ChannelsResponseDto> {
+    const channels = await this._channelRepository.find({
+      where: {
+        genreId: genreId,
+      },
+      relations: ['user', 'tag'],
+    });
+    channels.sort((a, b) => a.id - b.id);
+    return { channels };
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Channel } from 'src/database/entities/channels.entity';
 import { Master_Comment } from 'src/database/entities/master_comments.entity';
@@ -9,6 +9,7 @@ import { ChannelsResponseDto } from './dto/channels.response.dto';
 import { CommentResponseDto } from './dto/comment.response.dto';
 import { CommentsResponseDto } from './dto/comments.response.dto';
 import { createChannelRequestDto } from './dto/create-channel.request.dto';
+import { editCommentRequestDto } from './dto/edit-comment.request.dto';
 import { joinChannelRequestDto } from './dto/join-channel.request.dto';
 import { sendCommentRequestDto } from './dto/sendComment.request.dto';
 import { UsersChannelResponseDto } from './dto/user-channel.response.dto';
@@ -77,5 +78,21 @@ export class ChannelService {
     });
     comments.sort((a, b) => a.id - b.id);
     return { comments };
+  }
+
+  async editComment(editCommentData: editCommentRequestDto): Promise<CommentResponseDto> {
+    const origin = await this._masterCommentRepository.find({
+      where: {
+        id: editCommentData.master_commentId,
+      },
+    });
+    if (!origin) {
+      throw new NotFoundException('コメントが見つかりません');
+    }
+    const updateCommentData = Object.assign(origin[0], {
+      comment: editCommentData.comment,
+    });
+    const comment = await this._masterCommentRepository.save(updateCommentData);
+    return { comment };
   }
 }

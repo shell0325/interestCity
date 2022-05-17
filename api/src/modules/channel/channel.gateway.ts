@@ -11,6 +11,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { ChannelService } from './channel.service';
 import { CommentResponseDto } from './dto/comment.response.dto';
+import { editCommentRequestDto } from './dto/edit-comment.request.dto';
 import { joinChannelRequestDto } from './dto/join-channel.request.dto';
 import { sendCommentRequestDto } from './dto/sendComment.request.dto';
 
@@ -25,6 +26,8 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   server: Server;
 
   constructor(private readonly _channelService: ChannelService) {}
+
+  private logger: Logger = new Logger('AppGateway');
 
   @SubscribeMessage('findChannel')
   async findChannel(client: Socket, genreId: number) {
@@ -56,7 +59,11 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     this.server.emit('channel_comments', comments);
   }
 
-  private logger: Logger = new Logger('AppGateway');
+  @SubscribeMessage('editComment')
+  async editComment(client: Socket, editCommentData: editCommentRequestDto) {
+    const comment = await this._channelService.editComment(editCommentData);
+    this.server.emit('commentData', comment);
+  }
 
   afterInit(server: Server) {
     this.logger.log('起動しました');

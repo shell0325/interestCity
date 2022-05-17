@@ -23,6 +23,7 @@ import { bookmarkCommentRequestDto } from './dto/register-bookmark-comment.reque
 import { likesCommentRequestDto } from './dto/register-likes-comment.request.dto';
 import { sendCommentRequestDto } from './dto/sendComment.request.dto';
 import { SubCommentResponseDto } from './dto/sub-comment.response.dto';
+import { SubCommentsResponseDto } from './dto/sub-comments.response.dto';
 import { UsersChannelResponseDto } from './dto/user-channel.response.dto';
 
 @Injectable()
@@ -179,6 +180,16 @@ export class ChannelService {
     subCommentData: postThreadCommentRequestDto,
   ): Promise<SubCommentResponseDto> {
     const subComment = await this._subComment.save(subCommentData);
+    return { subComment };
+  }
+
+  async findThreadComment(master_commentId: number): Promise<SubCommentsResponseDto> {
+    const subComment = await this._subComment.find({
+      where: {
+        master_commentId: master_commentId,
+      },
+      relations: ['user', 'master_comment'],
+    });
     return { subComment };
   }
 }

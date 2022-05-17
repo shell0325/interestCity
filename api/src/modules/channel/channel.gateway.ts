@@ -99,6 +99,12 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     this.server.emit('postThreadCommentData', subComment);
   }
 
+  @SubscribeMessage('findThreadComment')
+  async findThreadComment(client: Socket, master_commentId: number) {
+    const subComment = await this._channelService.findThreadComment(master_commentId);
+    this.server.emit('threadCommentData', subComment);
+  }
+
   afterInit(server: Server) {
     this.logger.log('起動しました');
   }

@@ -9,6 +9,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { GenreService } from '../genre/genre.service';
 import { ChannelService } from './channel.service';
 import { CommentResponseDto } from './dto/comment.response.dto';
 import { editCommentRequestDto } from './dto/edit-comment.request.dto';
@@ -29,7 +30,10 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   @WebSocketServer()
   server: Server;
 
-  constructor(private readonly _channelService: ChannelService) {}
+  constructor(
+    private readonly _channelService: ChannelService,
+    private readonly _genreService: GenreService,
+  ) {}
 
   private logger: Logger = new Logger('AppGateway');
 
@@ -103,6 +107,12 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   async findThreadComment(client: Socket, master_commentId: number) {
     const subComment = await this._channelService.findThreadComment(master_commentId);
     this.server.emit('threadCommentData', subComment);
+  }
+
+  @SubscribeMessage('findGenre')
+  async findGenre(client: Socket, userId: number) {
+    const genre = await this._genreService.findGenre(userId);
+    this.server.emit('genreData', genre.usersGenres);
   }
 
   afterInit(server: Server) {

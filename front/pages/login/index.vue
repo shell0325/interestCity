@@ -84,7 +84,6 @@ export default {
             password: this.password,
           },
         })
-        console.log(response)
         return response
       } catch (e) {
         alert('パスワードもしくはEmailが間違っています')

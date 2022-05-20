@@ -113,10 +113,8 @@ export const actions = {
   },
 
   async findGenre({ commit }, userId) {
-    console.log(userId)
     await socket.emit('findGenre', userId)
     await socket.on('genreData', data => {
-      console.log(data)
       commit('setGenreData', data)
       return data
     })
@@ -156,7 +154,6 @@ export const actions = {
   },
 
   exitChannel({ dispatch, commit }, exitChannelData) {
-    console.log(exitChannelData)
     socket.emit('exitChannel', exitChannelData.channelId)
     socket.on('exitChannelData', data => {
       dispatch('findChannel', exitChannelData.genreId)
@@ -195,10 +192,8 @@ export const actions = {
   },
 
   getBookmarkComment({ commit }, findBookmarkData) {
-    console.log(findBookmarkData)
     socket.emit('findBookmarkComment', findBookmarkData)
     socket.on('bookmarkCommentData', data => {
-      console.log(data)
       commit('setBookmarkComments', data.bookmarks)
     })
   },
@@ -211,7 +206,6 @@ export const actions = {
   },
 
   postThreadComment({ commit }, threadCommentData) {
-    console.log(threadCommentData)
     socket.emit('postThreadComment', threadCommentData)
     socket.on('postThreadCommentData', data => {
       socket.emit('findThreadComment', threadCommentData.master_commentId)
@@ -294,8 +288,4 @@ export const actions = {
       socket.emit('request_channel_comments', editCommentData.channelId)
     })
   },
-
-  testConsole() {
-    console.log('testConsole')
-  }
 }

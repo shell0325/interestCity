@@ -1,5 +1,1039 @@
+<template>
+  <v-app id="inspire">
+    <!-- タイトル入力画面 -->
+    <v-app-bar app clipped-right flat height="72">
+      <v-spacer v-if="!selectChannelIndex">チャンネルタイトル</v-spacer>
+      <v-spacer v-else-if="channelData.length !== 0">{{
+        channelData[selectChannelNum].name
+      }}</v-spacer>
+      <v-menu bottom offset-x offset-y :nudge-width="300">
+        <template #activator="{ on, attrs }">
+          <v-btn
+            style="text-transform: none"
+            icon
+            tile
+            v-bind="attrs"
+            v-on="on"
+          >
+            <v-avatar class="d-block mr-3" color="blue" size="40" rounded>
+              <span class="white--text headline">{{ top_name }}</span>
+            </v-avatar>
+          </v-btn>
+        </template>
+
+        <v-card>
+          <v-list>
+            <v-list-item>
+              <v-avatar class="d-block mr-3" color="blue" size="40" rounded>
+                <span class="white--text headline">{{ top_name }}</span>
+              </v-avatar>
+              <v-list-item-content>
+                <v-list-item-title>{{
+                  userProfile.username
+                }}</v-list-item-title>
+              </v-list-item-content>
+
+              <v-list-item-action>
+                <v-btn @click="overlay = !overlay"
+                  >プロフィールを編集する
+                </v-btn>
+              </v-list-item-action>
+            </v-list-item>
+          </v-list>
+
+          <v-divider></v-divider>
+
+          <v-list>
+            <v-list-item-title class="px-4">自己紹介</v-list-item-title>
+            <v-list-item>
+              <v-list-item-title class="self_introduction" px-0>{{
+                self_introduction
+              }}</v-list-item-title>
+            </v-list-item>
+
+            <v-divider></v-divider>
+
+            <v-list-item class="px-0">
+              <v-list-item-action class="logout">
+                <v-btn block @click="logout()">logout</v-btn>
+              </v-list-item-action>
+            </v-list-item>
+          </v-list>
+        </v-card>
+      </v-menu>
+    </v-app-bar>
+    <!-- チャンネル一覧を表示させるサイドバーについて -->
+    <v-navigation-drawer app width="300">
+      <v-navigation-drawer absolute color="grey lighten-3" width="70">
+        <!-- ジャンルアイコンのスペース -->
+        <v-divider class="mx-3 my-5"></v-divider>
+        <!-- ジャンルのアイコンや文字を入力する部分 -->
+        <v-btn
+          v-for="(genre, index) in genreData"
+          :key="index"
+          icon
+          tile
+          large
+          class="d-block text-center mx-auto mb-9"
+        >
+          <v-avatar
+            tile
+            :class="{
+              isSelect: genre.genre.id === selectGenreIndex,
+              selectGenre,
+            }"
+            @click="selectGenre(genre.genre.id, index), findChannels()"
+          >
+            <img :src="require(`@/assets/${genre.genre.name}.jpg`)" />
+          </v-avatar>
+        </v-btn>
+        <v-btn
+          icon
+          tile
+          large
+          class="d-block text-center mx-auto mb-9"
+          @click="registerGenre()"
+        >
+          <v-icon color="black">mdi-plus</v-icon>
+        </v-btn>
+      </v-navigation-drawer>
+      <!-- チャンネル上のスペース -->
+      <v-card color="red" height="72" width="245" class="ml-auto genreName">
+        <v-card-title
+          v-if="!selectGenreIndex"
+          width="50px"
+          class="text-h6 text--primary justify-center genreName"
+        >
+          ジャンル名
+        </v-card-title>
+        <v-card-title
+          v-else-if="genreData.length !== 0"
+          width="50px"
+          class="text-h6 text--primary justify-center genreName"
+        >
+          {{ genreData[selectGenreNum].genre.name }}
+        </v-card-title>
+      </v-card>
+      <v-list nav dense class="pl-16 px-0">
+        <v-list-item-group v-model="selectedChannel" color="primary">
+          <v-list-item>
+            <v-list-item-title
+              height="100%"
+              class="channelName list-dense-subheader-font-size-10"
+              color="red"
+              @click="getBookmarkComments()"
+              >ブックマーク</v-list-item-title
+            >
+          </v-list-item>
+          <v-list-item
+            v-for="(channel, index) in channelData"
+            v-show="
+              channel.user.some((channel) => channel.userId === userId) &&
+              channel.tag.length >= 3
+            "
+            :key="index"
+          >
+            <v-list-item-title
+              height="100%"
+              class="channelName list-dense-subheader-font-size-10"
+              @click="
+                getChannelComment(channel.id)
+                selectChannel(channel.id, index)
+                findParticipationUsers(channel.id)
+              "
+              >{{ channel.name }}</v-list-item-title
+            >
+          </v-list-item>
+        </v-list-item-group>
+      </v-list>
+
+      <v-list class="pl-14 px-0" rounded>
+        <v-menu bottom :offset-y="offset">
+          <template #activator="{ on, attrs }">
+            <v-btn
+              color="primary"
+              dark
+              v-bind="attrs"
+              :disabled="!selectGenreIndex"
+              class="text-caption addChannel mr-0 px-0"
+              v-on="on"
+            >
+              チャンネルを追加する
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item @click="createChannel()">
+              <v-list-item-title>新しいチャンネルを作成する</v-list-item-title>
+            </v-list-item>
+            <v-list-item @click="findJoinChannel()">
+              <v-list-item-title>チャンネル一覧を確認する</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </v-list>
+    </v-navigation-drawer>
+    <!-- スレッドを表示させるサイドバー -->
+    <v-navigation-drawer
+      v-model="drawer"
+      app
+      width="400"
+      clipped
+      right
+      stateless
+    >
+      <v-list class="threadComment">
+        <v-toolbar>
+          <v-toolbar-title> スレッド </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn icon small class="closeThread" @click="closeThread()">
+            <v-icon>mdi-window-close</v-icon>
+          </v-btn>
+        </v-toolbar>
+        <v-card>
+          <v-list-item-title v-if="channelCommentsData.length !== 0">{{
+            channelCommentsData[selectCommentNum].comment
+          }}</v-list-item-title>
+        </v-card>
+        <v-card v-for="(thread, index) in threadCommentData" :key="index">
+          <v-list-item>
+            <v-list-item-content>
+              <v-list-item>
+                <v-list-item-title class="commentUsername">{{
+                  thread.user.username
+                }}</v-list-item-title>
+                <v-list-item-title>{{ thread.createdAt }}</v-list-item-title>
+              </v-list-item>
+              <v-list-item-title>{{ thread.comment }}</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-card>
+      </v-list>
+      <!-- スレッドを入力&表示する部分 -->
+      <v-footer>
+        <v-textarea
+          v-model="threadComment"
+          background-color="grey lighten-1"
+          dense
+          flat
+          solo
+          filled
+          auto-grow
+          rows="3"
+          class="textarea"
+        ></v-textarea>
+        <div class="commentPost">
+          <v-btn
+            class="commentPostBtn mt-1"
+            fab
+            dark
+            small
+            color="black"
+            @click="postThreadComments()"
+          >
+            <v-icon>mdi-send</v-icon>
+          </v-btn>
+        </div>
+      </v-footer>
+    </v-navigation-drawer>
+    <v-main v-show="showComment" class="main">
+      <v-overlay :value="overlay" class="overlay" :absolute="absolute">
+        <v-card width="700" class="editUser">
+          <v-btn icon small class="closeBtn" @click="overlay = false">
+            <v-icon> mdi-window-close </v-icon>
+          </v-btn>
+          <v-file-input
+            :rules="fileRules"
+            accept="image/png, image/jpg, image/bmp"
+            placeholder="Pick an avatar"
+            prepend-icon="mdi-camera"
+            label="Avatar"
+            @change="select_file"
+          ></v-file-input>
+          <v-col cols="12" sm="13">
+            <v-text-field
+              v-model="editUsername"
+              :rules="rules"
+              counter
+              maxlength="20"
+              label="ユーザーネーム"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12" sm="12">
+            <v-textarea
+              v-model="editSelfIntroduction"
+              outlined
+              counter
+              auto-grow
+              rows="4"
+              maxlength="255"
+              label="プロフィールを入力してください"
+            ></v-textarea>
+          </v-col>
+          <v-card-actions class="editBtn">
+            <v-btn class="ma-1" plain @click="overlay = false"> Cancel </v-btn>
+            <v-btn
+              color="blue-grey"
+              class="ma-2 white--text"
+              @click="
+                editUserProfileImage()
+                editUser()
+              "
+            >
+              Upload
+              <v-icon right dark> mdi-cloud-upload </v-icon>
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-overlay>
+      <v-card
+        v-for="(comments, index) in bookmarkData"
+        v-show="showBookmark"
+        :key="comments.id"
+      >
+        <v-list class="commentList">
+          <v-card class="commentBtn">
+            <v-btn
+              icon
+              small
+              color="yellow"
+              @click="
+                selectCommentMouseover(comments.master_comment.id, index),
+                  cancelBookmarks()
+              "
+              ><v-icon>mdi-star</v-icon></v-btn
+            >
+            <v-btn
+              icon
+              small
+              @click.stop="drawer = true"
+              @click="openThread(), findThreadComments()"
+              ><v-icon>mdi-message-reply-text-outline</v-icon></v-btn
+            >
+            <v-menu bottom offset-x offset-y :nudge-width="150">
+              <template #activator="{ on, attrs }">
+                <v-btn
+                  v-show="comments.user.id === userId"
+                  icon
+                  small
+                  v-bind="attrs"
+                  v-on="on"
+                  ><v-icon>mdi-dots-horizontal</v-icon></v-btn
+                >
+              </template>
+              <v-card>
+                <v-list class="py-0">
+                  <v-list-item class="px-0 editComment">
+                    <v-list-item-action class="logout">
+                      <v-btn
+                        block
+                        class="px-0"
+                        @click="
+                          selectCommentMouseover(
+                            comments.master_comment.id,
+                            index
+                          ),
+                            editComment()
+                        "
+                        >コメントを編集する</v-btn
+                      >
+                    </v-list-item-action>
+                  </v-list-item>
+                  <v-list-item class="px-0 editComment">
+                    <v-list-item-action class="logout">
+                      <v-btn
+                        block
+                        class="px-0"
+                        @click="
+                          selectCommentMouseover(
+                            comments.master_comment.id,
+                            index
+                          ),
+                            deleteComments()
+                          getChannelComment(selectChannelIndex)
+                        "
+                        >コメントを削除する</v-btn
+                      >
+                    </v-list-item-action>
+                  </v-list-item>
+                </v-list>
+              </v-card>
+            </v-menu>
+          </v-card>
+          <v-list-item class="comment">
+            <v-list-item-content>
+              <v-textarea
+                v-show="
+                  editComments &&
+                  selectCommentIndex === comments.master_comment.id
+                "
+                v-model="comment"
+                background-color="grey lighten-1"
+                dense
+                flat
+                solo
+                filled
+                auto-grow
+                rows="3"
+                class="textarea"
+              >
+              </v-textarea>
+
+              <v-list-item>
+                <v-list-item-title class="commentUsername">{{
+                  comments.user.username
+                }}</v-list-item-title>
+                <v-list-item-title>{{
+                  comments.master_comment.createdAt
+                }}</v-list-item-title>
+              </v-list-item>
+              <v-card-text>{{ comments.master_comment.comment }}</v-card-text>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-card>
+      <v-card
+        v-for="(comments, index) in channelCommentsData"
+        v-show="!showBookmark"
+        :key="index"
+      >
+        <v-list class="commentList">
+          <v-card class="commentBtn">
+            <v-btn
+              v-show="
+                comments.bookmark.some((u) => u.userId === userId) &&
+                (!editComments || selectCommentIndex !== comments.id)
+              "
+              icon
+              small
+              color="yellow"
+              @click="
+                selectCommentMouseover(comments.id, index), bookmarkComment()
+              "
+              ><v-icon>mdi-star</v-icon></v-btn
+            >
+            <v-btn
+              v-show="
+                !comments.bookmark.some((u) => u.userId === userId) &&
+                (!editComments || selectCommentIndex !== comments.id)
+              "
+              icon
+              small
+              @click="
+                selectCommentMouseover(comments.id, index), bookmarkComment()
+              "
+              ><v-icon>mdi-star</v-icon></v-btn
+            >
+            <v-btn
+              v-show="!editComments || selectCommentIndex !== comments.id"
+              icon
+              small
+              @click.stop="drawer = true"
+              @click="
+                selectCommentMouseover(comments.id, index)
+                openThread()
+                findThreadComments()
+              "
+              ><v-icon>mdi-message-reply-text-outline</v-icon></v-btn
+            >
+            <v-menu bottom offset-x offset-y :nudge-width="150">
+              <template #activator="{ on, attrs }">
+                <v-btn
+                  v-show="
+                    comments.userId === userId &&
+                    (!editComments || selectCommentIndex !== comments.id)
+                  "
+                  icon
+                  small
+                  v-bind="attrs"
+                  v-on="on"
+                  ><v-icon>mdi-dots-horizontal</v-icon></v-btn
+                >
+              </template>
+              <v-card>
+                <v-list class="py-0">
+                  <v-list-item class="px-0 editComment">
+                    <v-list-item-action class="logout">
+                      <v-btn
+                        block
+                        class="px-0"
+                        @click="
+                          selectCommentMouseover(comments.id, index),
+                            editComment()
+                        "
+                        >コメントを編集する</v-btn
+                      >
+                    </v-list-item-action>
+                  </v-list-item>
+                  <v-list-item class="px-0 editComment">
+                    <v-list-item-action class="logout">
+                      <v-btn
+                        block
+                        class="px-0"
+                        @click="
+                          selectCommentMouseover(comments.id, index),
+                            deleteComments()
+                          getChannelComment(selectChannelIndex)
+                        "
+                        >コメントを削除する</v-btn
+                      >
+                    </v-list-item-action>
+                  </v-list-item>
+                </v-list>
+              </v-card>
+            </v-menu>
+          </v-card>
+          <v-list-item class="comment">
+            <v-list-item-content
+              v-show="editComments && selectCommentIndex === comments.id"
+            >
+              <v-textarea
+                v-show="editComments && selectCommentIndex === comments.id"
+                v-model="editCommentData"
+                background-color="grey lighten-1"
+                dense
+                flat
+                solo
+                filled
+                auto-grow
+                rows="3"
+                class="textarea"
+              >
+              </v-textarea>
+              <v-list-item-action class="commentPost">
+                <v-btn
+                  class="commentPostBtn mt-1 mx-1 white--text"
+                  color="blue-grey"
+                  @click="saveEditComment()"
+                >
+                  保存する
+                </v-btn>
+                <v-btn
+                  class="commentPostBtn mt-1"
+                  plain
+                  @click=";(editComments = false), (comment = '')"
+                >
+                  キャンセル
+                </v-btn>
+              </v-list-item-action>
+            </v-list-item-content>
+            <v-list-item-content
+              v-show="!editComments || selectCommentIndex !== comments.id"
+            >
+              <v-list-item>
+                <v-list-item-title class="commentUsername">{{
+                  comments.user.username
+                }}</v-list-item-title>
+                <v-list-item-title>{{ comments.createdAt }}</v-list-item-title>
+              </v-list-item>
+              <v-card-text>{{ comments.comment }}</v-card-text>
+            </v-list-item-content>
+          </v-list-item>
+          <v-btn
+            v-show="
+              !comments.likes.some((u) => u.userId === userId) &&
+              (!editComments || selectCommentIndex !== comments.id)
+            "
+            icon
+            small
+            class="ml-5"
+            @click="
+              selectCommentMouseover(comments.id, index),
+                likesComment(),
+                getChannelComment(selectChannelIndex)
+            "
+          >
+            <v-icon>mdi-heart</v-icon>
+          </v-btn>
+          <v-btn
+            v-show="
+              comments.likes.some((u) => u.userId === userId) &&
+              (!editComments || selectCommentIndex !== comments.id)
+            "
+            icon
+            small
+            class="ml-5"
+            color="red"
+            @click="
+              selectCommentMouseover(comments.id, index)
+              likesComment()
+              getChannelComment(selectChannelIndex)
+            "
+          >
+            <v-icon>mdi-heart</v-icon>
+          </v-btn>
+        </v-list>
+      </v-card>
+      <!--チャンネルのコメントを表示する部分-->
+    </v-main>
+    <!-- 文字を入力する部分 -->
+    <v-footer app color="transparent" inset margin-bottom="0" class="footer">
+      <v-textarea
+        v-model="comment"
+        background-color="grey lighten-1"
+        dense
+        flat
+        solo
+        filled
+        auto-grow
+        rows="3"
+        class="textarea"
+      >
+      </v-textarea>
+      <div class="commentPost">
+        <v-btn
+          class="commentPostBtn mt-1"
+          fab
+          dark
+          small
+          :disabled="!selectGenreIndex || !selectChannelIndex"
+          color="black"
+          @click="postComment()"
+        >
+          <v-icon>mdi-send</v-icon>
+        </v-btn>
+      </div>
+    </v-footer>
+  </v-app>
+</template>
+
 <script>
+import { mapActions, mapGetters } from 'vuex'
 export default {
   name: 'ChannelPage',
+  data() {
+    return {
+      username: '',
+      userId: '',
+      self_introduction: '',
+      top_name: '',
+      drawer: false,
+      comment: '',
+      editCommentData: '',
+      selectGenreIndex: '',
+      selectChannelIndex: '',
+      selectCommentIndex: '',
+      selectMasterCommentNum: 0,
+      selectGenreNum: 0,
+      selectChannelNum: 0,
+      selectCommentNum: 0,
+      offset: true,
+      menu_list: [
+        { item_list: '新しいチャンネルを作成する' },
+        { item_list: 'チャンネル一覧を確認する' },
+      ],
+      showComment: true,
+      threadComment: '',
+      selectedChannel: '',
+      overlay: false,
+      rules: [(v) => v.length <= 20 || 'Max 20 characters'],
+      editUsername: '',
+      editSelfIntroduction: '',
+      editProfileImagePath: '',
+      fileRules: [
+        (value) =>
+          !value ||
+          value.size < 2000000 ||
+          'Avatar size should be less than 2 MB!',
+      ],
+      absolute: true,
+      editComments: false,
+      showBookmark: false,
+    }
+  },
+  computed: {
+    ...mapGetters({
+      genreData: 'channel/getGenreData',
+      channelData: 'channel/getChannelData',
+      channelCommentsData: 'channel/getChannelComments',
+      participationUserData: 'channel/getParticipationUserData',
+      threadCommentData: 'channel/getThreadComment',
+      userProfile: 'channel/getUserProfile',
+      topName: 'channel/getTopName',
+      bookmarkData: 'channel/getBookmarkComments',
+    }),
+  },
+  mounted() {
+    this.findUser(this.$auth.user.id)
+    this.username = this.$auth.user.username
+    this.self_introduction = this.$auth.user.self_introduction
+    this.top_name = this.username.slice(0, 1)
+    this.userId = this.$auth.user.id
+    this.getGenre(this.$auth.user.id)
+    this.getChannelComments(this.selectChannelIndex)
+  },
+  methods: {
+    ...mapActions({
+      sendComment: 'channel/sendComment',
+      findGenre: 'channel/findGenre',
+      findChannel: 'channel/findChannel',
+      getChannelComments: 'channel/getChannelComments',
+      findJoinChannels: 'channel/findJoinChannels',
+      findParticipationUser: 'channel/findParticipationUser',
+      bookmarkComments: 'channel/bookmarkComments',
+      getBookmarkComment: 'channel/getBookmarkComment',
+      findThreadComment: 'channel/findThreadComment',
+      postThreadComment: 'channel/postThreadComment',
+      likesComments: 'channel/likesComments',
+      editUserProfile: 'channel/editUserProfile',
+      editProfileImage: 'channel/editProfileImage',
+      findUserProfile: 'channel/findUserProfile',
+      deleteComment: 'channel/deleteComment',
+      cancelBookmark: 'channel/cancelBookmark',
+      saveComment: 'channel/editComment',
+      testConsole: 'channel/testConsole',
+    }),
+
+    postComment() {
+      if (this.comment) {
+        const commentData = {
+          comment: this.comment,
+          userId: this.$auth.user.id,
+          channelId: this.channelData[this.selectChannelNum].id,
+        }
+        this.sendComment(commentData)
+        this.comment = ''
+        return { commentData }
+      }
+    },
+
+    createChannel() {
+      this.$router.push({
+        path: '/channel/channelCreate',
+        query: { genreId: this.selectGenreIndex },
+      })
+    },
+
+    async getGenre() {
+      const genre = await this.findGenre(this.$auth.user.id)
+      return genre
+    },
+
+    selectGenre(genreId, index) {
+      this.selectGenreIndex = genreId
+      this.selectGenreNum = index
+    },
+
+    selectChannel(channelId, index) {
+      this.selectChannelIndex = channelId
+      this.selectChannelNum = index
+    },
+
+    async findChannels() {
+      const channels = await this.findChannel(this.selectGenreIndex)
+      return channels
+    },
+
+    selectCommentMouseover(commentId, index) {
+      this.selectCommentIndex = commentId
+      this.selectCommentNum = index
+    },
+
+    selectCommentMouseleave() {
+      this.selectCommentIndex = ''
+      this.selectCommentNum = ''
+    },
+
+    async getChannelComment(channelId) {
+      this.showBookmark = false
+      const comments = await this.getChannelComments(channelId)
+      return comments
+    },
+    logout() {
+      this.$auth.logout()
+    },
+    findJoinChannel() {
+      this.$router.push({
+        path: '/channel/channelList',
+        query: { genreId: this.selectGenreIndex },
+      })
+    },
+
+    async findParticipationUsers(channelId) {
+      const participationUser = await this.findParticipationUser(channelId)
+      return participationUser
+    },
+
+    show() {
+      this.showComment = !this.showComment
+    },
+
+    bookmarkComment() {
+      const bookmarkCommentData = {
+        master_commentId: this.selectCommentIndex,
+        userId: this.userId,
+        genreId: this.selectGenreIndex,
+        channelId: this.selectChannelIndex,
+      }
+      this.bookmarkComments(bookmarkCommentData)
+    },
+
+    async getBookmarkComments() {
+      this.showBookmark = true
+      const findBookmarkData = {
+        genreId: this.selectGenreIndex,
+        userId: this.userId,
+      }
+      const bookmarkComment = await this.getBookmarkComment(findBookmarkData)
+      return bookmarkComment
+    },
+
+    openThread() {
+      console.log(this.selectMasterCommentNum)
+      console.log(this.selectCommentIndex)
+      this.selectMasterCommentNum = this.selectCommentIndex
+    },
+
+    closeThread() {
+      this.drawer = false
+    },
+
+    async findThreadComments() {
+      const threadComment = await this.findThreadComment(
+        this.selectMasterCommentNum
+      )
+      return threadComment
+    },
+
+    async postThreadComments() {
+      const postThreadCommentData = {
+        comment: this.threadComment,
+        userId: this.userId,
+        master_commentId: this.selectMasterCommentNum,
+      }
+      if (postThreadCommentData.comment !== '') {
+        const postThreadComment = await this.postThreadComment(
+          postThreadCommentData
+        )
+        return postThreadComment
+      }
+    },
+
+    likesComment() {
+      const likesCommentData = {
+        master_commentId: this.selectCommentIndex,
+        userId: this.userId,
+        channelId: this.selectChannelIndex,
+      }
+      this.likesComments(likesCommentData)
+    },
+
+    async editUser() {
+      const editUserData = {
+        userId: this.userId,
+        username: this.editUsername,
+        self_introduction: this.editSelfIntroduction,
+        channelId: this.selectChannelIndex,
+      }
+      await this.editUserProfile(editUserData)
+      this.editUsername = ''
+      this.editSelfIntroduction = ''
+    },
+
+    select_file(file) {
+      this.editProfileImagePath = file
+    },
+
+    editUserProfileImage() {
+      const editData = {
+        email: this.$auth.user.email,
+        filePath: this.editProfileImagePath,
+      }
+      this.editProfileImage(editData)
+    },
+
+    async findUser(userId) {
+      const user = await this.findUserProfile(userId)
+      return user
+    },
+
+    deleteComments() {
+      const deleteCommentData = {
+        master_commentId: this.selectCommentIndex,
+        channelId: this.selectChannelIndex,
+      }
+      this.deleteComment(deleteCommentData)
+    },
+
+    editComment() {
+      this.editComments = true
+      this.editCommentData =
+        this.channelCommentsData[this.selectCommentNum].comment
+    },
+
+    saveEditComment() {
+      const editComment = {
+        master_commentId: this.selectCommentIndex,
+        comment: this.editCommentData,
+        channelId: this.selectChannelIndex,
+      }
+      this.saveComment(editComment)
+      this.editComments = false
+    },
+
+    cancelBookmarks() {
+      const cancelBookmarkData = {
+        master_commentId: this.selectCommentIndex,
+        userId: this.userId,
+        genreId: this.selectGenreIndex,
+      }
+      this.cancelBookmark(cancelBookmarkData)
+    },
+
+    registerGenre() {
+      this.$router.push({
+        path: '/genre',
+      })
+    },
+  },
 }
 </script>
+
+<style>
+.createChannel {
+  justify-content: center;
+  white-space: normal;
+}
+.addChannel {
+  white-space: normal;
+  display: block;
+  width: -webkit-fill-available;
+}
+.genreName {
+  width: inherit;
+}
+.registerChannel {
+  width: 100px;
+  white-space: normal;
+  display: block;
+}
+.genreName {
+  display: flex;
+}
+.comment {
+  /* list-style: none; */
+  color: white;
+  position: relative;
+  z-index: 1;
+}
+.selectGenre.isSelect {
+  border: black 2px solid;
+  box-sizing: content-box;
+}
+.channelTag {
+  text-align: center;
+}
+.selectChannel.isSelect {
+  background-color: red;
+}
+.commentBtn {
+  width: max-content;
+  margin-right: 10px;
+  float: right;
+  padding: 0;
+  position: absolute;
+  right: 0;
+  z-index: 2;
+}
+.commentUsername {
+  max-width: fit-content;
+  margin-right: 20px;
+}
+.bookmark {
+  color: yellow;
+}
+.closeThread {
+  float: right;
+}
+.threadTextField {
+  display: flex;
+}
+.v-text-field__details {
+  display: none;
+}
+.threadComment {
+  padding: 0;
+}
+.comment {
+  white-space: pre-line;
+}
+.v-text-field.v-text-field--enclosed {
+  margin: auto;
+}
+.v-textarea {
+  width: 95%;
+  margin: auto;
+}
+.footer {
+  padding: 0;
+  display: block;
+}
+.v-text-field.v-text-field--enclosed:not(.v-text-field--rounded)
+  > .v-input__control
+  > .v-input__slot,
+.v-text-field.v-text-field--enclosed .v-text-field__details {
+  margin-bottom: 0;
+}
+.v-card__text {
+  padding: 0;
+}
+.commentList {
+  padding: 0;
+}
+.v-list-item__content {
+  padding: 0;
+}
+.channelName {
+  text-align: center;
+  font-size: 1.3rem !important;
+  /* line-height: inherit; */
+}
+.v-list-item--dense .v-list-item__title,
+.v-list-item--dense .v-list-item__subtitle,
+.v-list--dense .v-list-item .v-list-item__title,
+.v-list--dense .v-list-item .v-list-item__subtitle {
+  line-height: inherit;
+}
+.userIcon {
+  display: contents;
+}
+.closeBtn {
+  float: right;
+}
+.overlay {
+  position: absolute;
+}
+.v-overlay__content {
+  border: 2px white solid;
+}
+.editBtn {
+  float: right;
+}
+.logout {
+  display: contents;
+}
+.self_introduction {
+  text-overflow: inherit;
+  white-space: unset;
+  width: min-content;
+  /* word-break: break-all;
+  white-space: normal; */
+}
+.editComment {
+  min-height: auto;
+}
+.likesBtn {
+  color: red;
+}
+.commentPost {
+  width: 95%;
+  margin: auto;
+}
+.commentPostBtn {
+  float: right;
+  /* margin: 0; */
+}
+.v-application--is-ltr .v-list-item__action:last-of-type:not(:only-child) {
+  display: block;
+  margin: auto;
+}
+</style>

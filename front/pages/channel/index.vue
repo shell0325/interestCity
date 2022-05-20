@@ -778,8 +778,6 @@ export default {
     },
 
     openThread() {
-      console.log(this.selectMasterCommentNum)
-      console.log(this.selectCommentIndex)
       this.selectMasterCommentNum = this.selectCommentIndex
     },
 

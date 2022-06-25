@@ -10,6 +10,7 @@ import { User } from 'src/database/entities/users.entity';
 import { Users_Channels } from 'src/database/entities/users_channels.entity';
 import { Users_Genres } from 'src/database/entities/users_genres.entity';
 import { GenreService } from '../genre/genre.service';
+import { UserService } from '../user/user.service';
 import { ChannelController } from './channel.controller';
 import { ChannelGateway } from './channel.gateway';
 import { ChannelService } from './channel.service';
@@ -29,7 +30,7 @@ import { ChannelService } from './channel.service';
     ]),
   ],
   controllers: [ChannelController],
-  providers: [ChannelService, ChannelGateway, GenreService],
+  providers: [ChannelService, ChannelGateway, GenreService,UserService],
   exports: [ChannelService],
 })
 export class ChannelModule {}

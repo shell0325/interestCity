@@ -7,6 +7,7 @@ import { UsersResponseDto } from './dto/users.response.dto';
 import { createUserRequestDto } from './dto/create-user.request.dto';
 import { UserResponseDto } from './dto/user.response.dto';
 import { IUserService } from './interface/user-service.interface';
+import { editUserDataRequestDto } from './dto/edit-user-data.request.dto';
 
 @Injectable()
 export class UserService implements IUserService {
@@ -49,5 +50,30 @@ export class UserService implements IUserService {
     const saltRounds: number = 10;
     const salt: string = bcrypt.genSaltSync(saltRounds);
     return bcrypt.hashSync(password, salt);
+  }
+
+  //userProfile編集処理
+  async editUserProfile(editUserData: editUserDataRequestDto): Promise<UserResponseDto> {
+    const origin = await this._userRepository.find({
+      where: {
+        id: editUserData.userId,
+      },
+    });
+    if (!origin) {
+      throw new NotFoundException('ユーザーが見つかりません');
+    }
+    const updateUser = Object.assign(origin[0], {
+      username: editUserData.username,
+      self_introduction: editUserData.self_introduction,
+    });
+    const user = await this._userRepository.save(updateUser);
+    return { user };
+  }
+
+  //userProfile取得処理
+  async findUserProfile(id: number): Promise<UserResponseDto> {
+    const user = await this._userRepository.findOne({ where: { id } });
+    if (!user) throw new NotFoundException();
+    return { user };
   }
 }

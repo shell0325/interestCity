@@ -16,7 +16,7 @@
             v-on="on"
           >
             <v-avatar class="d-block mr-3" color="blue" size="40" rounded>
-              <span class="white--text headline">{{ top_name }}</span>
+              <span class="white--text headline">{{ topName }}</span>
             </v-avatar>
           </v-btn>
         </template>
@@ -25,7 +25,7 @@
           <v-list>
             <v-list-item>
               <v-avatar class="d-block mr-3" color="blue" size="40" rounded>
-                <span class="white--text headline">{{ top_name }}</span>
+                <span class="white--text headline">{{ topName }}</span>
               </v-avatar>
               <v-list-item-content>
                 <v-list-item-title>{{
@@ -605,7 +605,6 @@ export default {
       username: '',
       userId: '',
       self_introduction: '',
-      top_name: '',
       drawer: false,
       comment: '',
       editCommentData: '',
@@ -656,7 +655,6 @@ export default {
     this.findUser(this.$auth.user.id)
     this.username = this.$auth.user.username
     this.self_introduction = this.$auth.user.self_introduction
-    this.top_name = this.username.slice(0, 1)
     this.userId = this.$auth.user.id
     this.getGenre(this.$auth.user.id)
     this.getChannelComments(this.selectChannelIndex)
@@ -680,7 +678,6 @@ export default {
       deleteComment: 'channel/deleteComment',
       cancelBookmark: 'channel/cancelBookmark',
       saveComment: 'channel/editComment',
-      testConsole: 'channel/testConsole',
     }),
 
     postComment() {
@@ -908,7 +905,6 @@ export default {
   display: flex;
 }
 .comment {
-  /* list-style: none; */
   color: white;
   position: relative;
   z-index: 1;
@@ -983,7 +979,6 @@ export default {
 .channelName {
   text-align: center;
   font-size: 1.3rem !important;
-  /* line-height: inherit; */
 }
 .v-list-item--dense .v-list-item__title,
 .v-list-item--dense .v-list-item__subtitle,
@@ -1013,8 +1008,6 @@ export default {
   text-overflow: inherit;
   white-space: unset;
   width: min-content;
-  /* word-break: break-all;
-  white-space: normal; */
 }
 .editComment {
   min-height: auto;
@@ -1028,7 +1021,6 @@ export default {
 }
 .commentPostBtn {
   float: right;
-  /* margin: 0; */
 }
 .v-application--is-ltr .v-list-item__action:last-of-type:not(:only-child) {
   display: block;

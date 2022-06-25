@@ -10,6 +10,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { GenreService } from '../genre/genre.service';
+import { editUserDataRequestDto } from '../user/dto/edit-user-data.request.dto';
+import { UserService } from '../user/user.service';
 import { ChannelService } from './channel.service';
 import { CommentResponseDto } from './dto/comment.response.dto';
 import { editCommentRequestDto } from './dto/edit-comment.request.dto';
@@ -33,6 +35,7 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   constructor(
     private readonly _channelService: ChannelService,
     private readonly _genreService: GenreService,
+    private readonly _userService: UserService,
   ) {}
 
   private logger: Logger = new Logger('AppGateway');
@@ -113,6 +116,18 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   async findGenre(client: Socket, userId: number) {
     const genre = await this._genreService.findGenre(userId);
     this.server.emit('genreData', genre.usersGenres);
+  }
+
+  @SubscribeMessage('editUserProfile')
+  async editUserProfile(client: Socket, editUserData: editUserDataRequestDto) {
+    const findUser = await this._userService.editUserProfile(editUserData);
+    this.server.emit('editUserData', findUser);
+  }
+
+  @SubscribeMessage('findUserProfile')
+  async findUserProfile(client: Socket, userId: number) {
+    const userProfile = await this._userService.findUserProfile(userId);
+    this.server.emit('userProfile', userProfile.user);
   }
 
   afterInit(server: Server) {

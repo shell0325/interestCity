@@ -11,6 +11,7 @@ interface JWTPayload {
   id: User['id'];
   username: User['username'];
   email: User['email'];
+  certification: User['certification'];
   self_Introduction: User['self_introduction'];
   profileImage: User['profileImagePath'];
   created_at: User['createdAt'];
@@ -25,7 +26,7 @@ export class AuthService implements IAuthService {
   ) {}
 
   async validateUser(email: string, password: string): Promise<PasswordOmitUser> {
-    const user = await this._userService.findUser(email);
+    const user = await this._userService.getCertificationUser(email);
     const isValid = await bcrypt.compareSync(password, user.user.password);
     if (!user || !isValid) {
       throw new NotFoundException();
@@ -43,6 +44,7 @@ export class AuthService implements IAuthService {
       id: user.id,
       username: user.username,
       email: user.email,
+      certification:user.certification,
       self_Introduction: user.self_introduction,
       profileImage: user.profileImagePath,
       created_at: user.createdAt,
@@ -63,6 +65,7 @@ export class AuthService implements IAuthService {
       id: user.id,
       username: user.username,
       email: user.email,
+      certification:user.certification,
       self_Introduction: user.self_introduction,
       profileImage: user.profileImagePath,
       created_at: user.createdAt,

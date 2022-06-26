@@ -4,6 +4,7 @@ import { CommonResponse, CreatedResponse, OkResponse } from 'src/common/types/re
 import { UsersResponseDto } from './dto/users.response.dto';
 import { createUserRequestDto } from './dto/create-user.request.dto';
 import { Response } from 'express';
+import { certificationUserRequestDto } from './dto/certification-user.request.dto';
 
 @Controller('/user')
 export class UserController {
@@ -38,5 +39,11 @@ export class UserController {
     return {
       message: 'success',
     };
+  }
+
+  @Post('/certification')
+  async certificationUser(@Body() certificationUser: certificationUserRequestDto) {
+    const user = await this._userService.certificationUser(certificationUser);
+    return user;
   }
 }

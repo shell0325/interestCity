@@ -20,6 +20,9 @@ export class User {
   @Column('varchar', { name: 'password', length: 100 })
   password: string;
 
+  @Column('boolean', { name: 'certification',default:false })
+  certification: boolean;
+
   @Column('varchar', { name: 'self_introduction', length: 255, nullable: true })
   self_introduction: string;
 

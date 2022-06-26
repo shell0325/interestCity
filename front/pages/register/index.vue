@@ -131,8 +131,9 @@ export default {
               data.data.data.user === 'このメールアドレスは使用されています'
             ) {
               alert('このメールアドレスは既に登録されています')
+            } else if (data.data.data.user === '会員登録メールを送信しました') {
+              alert('会員登録メールを送信しました')
             }
-            this.$router.push('/login')
           })
       }
     },

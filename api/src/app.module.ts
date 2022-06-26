@@ -10,6 +10,7 @@ import { ChannelModule } from './modules/channel/channel.module';
 import { GenreModule } from './modules/genre/genre.module';
 import { TagService } from './modules/tag/tag.service';
 import { TagModule } from './modules/tag/tag.module';
+import { SendGridModule } from '@anchan828/nest-sendgrid';
 
 @Module({
   imports: [
@@ -23,6 +24,9 @@ import { TagModule } from './modules/tag/tag.module';
     ChannelModule,
     GenreModule,
     TagModule,
+    SendGridModule.forRoot({
+      apikey: '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',
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],

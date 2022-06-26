@@ -86,7 +86,9 @@ export default {
         })
         return response
       } catch (e) {
-        alert('パスワードもしくはEmailが間違っています')
+        alert(
+          '本登録が終わっていないまたはパスワードもしくはEmailが間違っています'
+        )
       }
     },
   },

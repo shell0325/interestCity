@@ -8,10 +8,14 @@ import { createUserRequestDto } from './dto/create-user.request.dto';
 import { UserResponseDto } from './dto/user.response.dto';
 import { IUserService } from './interface/user-service.interface';
 import { editUserDataRequestDto } from './dto/edit-user-data.request.dto';
+import { sendEmailRequestDto } from './dto/send-email.request.dto';
+import { SendGridService } from '@anchan828/nest-sendgrid';
+import { certificationUserRequestDto } from './dto/certification-user.request.dto';
 
 @Injectable()
 export class UserService implements IUserService {
   constructor(
+    private readonly sendGrid: SendGridService,
     @InjectRepository(User)
     private readonly _userRepository: Repository<User>,
   ) {}
@@ -28,13 +32,60 @@ export class UserService implements IUserService {
     //emailが使用可能かどうか確認
     const findUser = await this._userRepository.find({ where: { email: userData.email } });
     if (findUser.length !== 0) {
+      if (findUser[0].certification === false) {
+        const sendEmailUser = {
+          userId: findUser[0].id,
+          username: findUser[0].username,
+          email: findUser[0].email,
+        };
+        this.sendEmail(sendEmailUser);
+        return { user: '会員登録メールを送信しました' };
+      } else if (findUser[0].certification === true) {
+      }
       return { user: 'このメールアドレスは使用されています' };
     }
     //passwordをハッシュ化
     userData.password = this.getPasswordHash(userData.password);
     //新規ユーザーの保存
     const user = await this._userRepository.save(userData);
+    const registerUser = {
+      userId: user.id,
+      username: user.username,
+      email: user.email,
+    };
+    this.sendEmail(registerUser);
+    return { user: '会員登録メールを送信しました' };
+  }
+
+  async getCertificationUser(email: string): Promise<UserResponseDto> {
+    const user = await this._userRepository.findOne({
+      where: { email: email, certification: true },
+    });
+    if (!user) throw new NotFoundException();
     return { user };
+  }
+
+  async certificationUser(userData: certificationUserRequestDto) {
+    const origin = await this._userRepository.find({
+      where: {
+        id: userData.userId,
+      },
+    });
+    if (!origin) {
+      throw new NotFoundException('ユーザーが見つかりません');
+    }
+
+    const certificationUser = Object.assign(origin[0], {
+      certification: userData.certification,
+    });
+    const user = await this._userRepository.save(certificationUser);
+    return { user };
+  }
+
+  async findCertificationUser(id: number): Promise<UsersResponseDto> {
+    const users = await this._userRepository.find({ where: { id: id } });
+    if (!users) throw new NotFoundException();
+    return { users };
   }
 
   //user取得処理
@@ -75,5 +126,23 @@ export class UserService implements IUserService {
     const user = await this._userRepository.findOne({ where: { id } });
     if (!user) throw new NotFoundException();
     return { user };
+  }
+
+  async sendEmail(userData: sendEmailRequestDto): Promise<void> {
+    const now = new Date();
+    const expiration = await now.setHours(now.getHours() + 1);
+
+    const emailHash = await bcrypt.hash(userData.email, 10);
+
+    const hash = emailHash.replace('/', '');
+    const url =
+      'http://localhost:8080/register/_' + userData.userId + '/' + hash + '?expires=' + expiration;
+
+    await this.sendGrid.send({
+      to: userData.email,
+      from: 'test@example.com',
+      subject: 'User Created',
+      text: '以下のURLをクリックして本登録を完了させてください。\n\n' + url,
+    });
   }
 }

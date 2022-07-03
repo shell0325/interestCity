@@ -1,6 +1,7 @@
 import colors from 'vuetify/es5/util/colors'
 
 export default {
+  mode: 'spa',
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
     titleTemplate: '%s - front',
@@ -19,7 +20,8 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
-    { src: '~/plugins/vee-validate', ssr: true }
+    { src: '~/plugins/vee-validate', ssr: true },
+    { src: '~/plugins/vuex-persistedstate', ssr: false },
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -39,7 +41,7 @@ export default {
     '@nuxtjs/axios',
     // https://go.nuxtjs.dev/pwa
     '@nuxtjs/pwa',
-    '@nuxtjs/auth-next'
+    '@nuxtjs/auth-next',
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
@@ -79,10 +81,6 @@ export default {
   router: {
     middleware: ['auth']
   },
-
-  // plugins: [
-  //   { src: '~/plugins/vee-validate', ssr: true }
-  // ],
 
   proxy: {
     '/api': {

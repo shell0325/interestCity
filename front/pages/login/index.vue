@@ -42,6 +42,7 @@ import { required, email } from 'vuelidate/lib/validators'
 export default {
   name: 'LoginPage',
   mixins: [validationMixin],
+  middleware: 'login',
   validations: {
     email: { required, email },
   },

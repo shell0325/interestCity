@@ -17,6 +17,7 @@ export const state = () => ({
   userProfile: [],
   topName: '',
   bookmarkComments: [],
+  registerGenreData: []
 })
 
 export const getters = {
@@ -56,6 +57,9 @@ export const getters = {
   getBookmarkComments: state => {
     return state.bookmarkComments
   },
+  getRegisterGenreData: state => {
+    return state.registerGenreData
+  }
 }
 
 export const mutations = {
@@ -95,6 +99,9 @@ export const mutations = {
   setBookmarkComments(state, bookmarkComments) {
     state.bookmarkComments = bookmarkComments
   },
+  setRegisterGenreData(state, registerGenreData) {
+    state.registerGenreData = registerGenreData
+  },
 }
 
 export const actions = {
@@ -126,25 +133,6 @@ export const actions = {
       commit('setChannelData', data.channels)
     })
   },
-
-  // async findNonParticipationChannel({ commit }, findData) {
-  //   const participationChannelArray = []
-  //   socket.emit('participationChannel', findData)
-  //   await socket.on('participationChannelData', data => {
-  //     commit('setParticipationChannelData', data)
-  //     for (const participationChannel of data) {
-  //       participationChannelArray.push(participationChannel.channel)
-  //     }
-  //     socket.emit('findChannel', findData.genreId)
-  //     socket.on('channelData', data => {
-  //       for (const channelData of data) {
-  //         participationChannelArray.push(channelData)
-  //       }
-  //       const nonParticipationData = participationChannelArray.filter((value, index, self) => self.slice(0, self.length).filter(w => w.id === value.id).length <= 1);
-  //       commit('setNonParticipationData', nonParticipationData)
-  //     })
-  //   })
-  // },
 
   joinChannel({ dispatch, commit }, joinChannelData) {
     socket.emit('joinChannel', joinChannelData)
@@ -211,13 +199,6 @@ export const actions = {
       socket.emit('findThreadComment', threadCommentData.master_commentId)
     })
   },
-
-  // getThreadComment({ commit }) {
-  //   socket.emit('getThreadComment')
-  //   socket.on('getThreadCommentData', data => {
-  //     return data
-  //   })
-  // },
 
   likesComments({ commit }, likesData) {
     const likesCommentData = {
@@ -288,4 +269,17 @@ export const actions = {
       socket.emit('request_channel_comments', editCommentData.channelId)
     })
   },
+
+  async findGenreData({ commit }, id) {
+    const genre = await this.$axios.$get('http://localhost:3000/genre/find', 1)
+    commit('setGenreData', genre)
+  },
+
+  registerGenre({ commit }, genreData) {
+    socket.emit('registerGenre', genreData)
+    socket.on('registerData', data => {
+      commit('setRegisterGenreData', data.usersGenres)
+    })
+  }
+
 }

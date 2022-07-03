@@ -9,11 +9,11 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { registerGenreRequestDto } from '../genre/dto/register-genre.request.dto';
 import { GenreService } from '../genre/genre.service';
 import { editUserDataRequestDto } from '../user/dto/edit-user-data.request.dto';
 import { UserService } from '../user/user.service';
 import { ChannelService } from './channel.service';
-import { CommentResponseDto } from './dto/comment.response.dto';
 import { editCommentRequestDto } from './dto/edit-comment.request.dto';
 import { findBookmarkRequestDto } from './dto/find-bookmark.request.dto';
 import { joinChannelRequestDto } from './dto/join-channel.request.dto';
@@ -129,6 +129,12 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     const userProfile = await this._userService.findUserProfile(userId);
     this.server.emit('userProfile', userProfile.user);
   }
+
+  @SubscribeMessage('registerGenre')
+  async registerGenre(client: Socket, registerData: registerGenreRequestDto) {
+    const genre = await this._genreService.registerGenre(registerData)
+    this.server.emit('registerData',genre)
+    }
 
   afterInit(server: Server) {
     this.logger.log('起動しました');

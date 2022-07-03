@@ -40,7 +40,7 @@ export class GenreService implements IGenreService {
     return { genre };
   }
 
-  async registerGenre(registerData: registerGenreRequestDto): Promise<void> {
+  async registerGenre(registerData: registerGenreRequestDto): Promise<UsersGenresResponseDto> {
     const genreDelete = await this._users_genresRepository.delete({
       userId: registerData.userId,
     });
@@ -50,13 +50,15 @@ export class GenreService implements IGenreService {
     if (genreData.length !== 0) {
       throw new NotFoundException();
     }
-    registerData.genre.forEach(async (element) => {
+    const usersGenres: Users_Genres[] = [];
+    for (const genre of registerData.genre) {
       const users_genreData = {
         userId: registerData.userId,
-        genreId: element.id,
+        genreId: genre.id,
       };
       const users_genre = await this._users_genresRepository.save(users_genreData);
-      return users_genre;
-    });
+      usersGenres.push(users_genre);
+    }
+    return { usersGenres };
   }
 }

@@ -600,6 +600,7 @@
 import { mapActions, mapGetters } from 'vuex'
 export default {
   name: 'ChannelPage',
+  middleware: 'channel',
   data() {
     return {
       username: '',
@@ -702,6 +703,11 @@ export default {
 
     async getGenre() {
       const genre = await this.findGenre(this.$auth.user.id)
+      if (this.genreData.length === 0) {
+        this.$router.push({
+          path: '/genre',
+        })
+      }
       return genre
     },
 

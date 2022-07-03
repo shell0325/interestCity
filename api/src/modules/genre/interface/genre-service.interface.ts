@@ -8,5 +8,5 @@ export interface IGenreService {
   getGenre(): Promise<GenresResponseDto>;
   findGenre(userId: number): Promise<UsersGenresResponseDto>;
   createGenre(genreData: createGenreRequestDto): Promise<GenreResponseDto>;
-  registerGenre(registerData: registerGenreRequestDto): Promise<void>;
+  registerGenre(registerData: registerGenreRequestDto): Promise<UsersGenresResponseDto>;
 }

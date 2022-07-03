@@ -18,6 +18,12 @@ export class GenreController {
     return new OkResponse(responseData);
   }
 
+  @Get('/find')
+  async findGenre(@Body() userId: any) {
+    const genreData = await this._genreService.findGenre(userId.userId);
+    return genreData;
+  }
+
   @Post()
   async createGenre(@Body() genres: createGenreRequestDto) {
     let responseData: GenreResponseDto;

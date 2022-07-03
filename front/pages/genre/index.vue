@@ -33,6 +33,7 @@
 
 <script>
 import axios from 'axios'
+import { mapActions, mapGetters } from 'vuex'
 export default {
   name: 'GenrePage',
   data() {
@@ -42,6 +43,11 @@ export default {
       genreSelect: false,
       selected: [],
     }
+  },
+  computed: {
+    ...mapGetters({
+      registerGenreData: 'channel/getRegisterGenreData',
+    }),
   },
   mounted() {
     axios
@@ -54,19 +60,20 @@ export default {
       })
   },
   methods: {
+    ...mapActions({
+      registerGenres: 'channel/registerGenre',
+    }),
     async registerGenre() {
       const registerData = {
         userId: this.$auth.user.id,
         genre: this.selected,
       }
-      const genre = await axios
-        .post('http://localhost:3000/genre/register', registerData)
-        .then((res) => {
-          this.$router.push({
-            path: '/channel',
-          })
+      await this.registerGenres(registerData)
+      if (this.registerGenreData.length !== 0) {
+        this.$router.push({
+          path: '/channel',
         })
-      return genre
+      }
     },
   },
 }

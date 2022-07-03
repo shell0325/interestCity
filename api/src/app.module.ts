@@ -8,7 +8,6 @@ import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ChannelModule } from './modules/channel/channel.module';
 import { GenreModule } from './modules/genre/genre.module';
-import { TagService } from './modules/tag/tag.service';
 import { TagModule } from './modules/tag/tag.module';
 import { SendGridModule } from '@anchan828/nest-sendgrid';
 

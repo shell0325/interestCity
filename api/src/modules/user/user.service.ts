@@ -9,13 +9,13 @@ import { UserResponseDto } from './dto/user.response.dto';
 import { IUserService } from './interface/user-service.interface';
 import { editUserDataRequestDto } from './dto/edit-user-data.request.dto';
 import { sendEmailRequestDto } from './dto/send-email.request.dto';
-import { SendGridService } from '@anchan828/nest-sendgrid';
 import { certificationUserRequestDto } from './dto/certification-user.request.dto';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class UserService implements IUserService {
   constructor(
-    private readonly sendGrid: SendGridService,
+    private readonly mailerService: MailerService,
     @InjectRepository(User)
     private readonly _userRepository: Repository<User>,
   ) {}
@@ -128,6 +128,7 @@ export class UserService implements IUserService {
     return { user };
   }
 
+  //メール送信処理
   async sendEmail(userData: sendEmailRequestDto): Promise<void> {
     const now = new Date();
     const expiration = await now.setHours(now.getHours() + 1);
@@ -138,11 +139,11 @@ export class UserService implements IUserService {
     const url =
       'http://localhost:8080/register/_' + userData.userId + '/' + hash + '?expires=' + expiration;
 
-    await this.sendGrid.send({
+    this.mailerService.sendMail({
       to: userData.email,
-      from: 'test@example.com',
-      subject: 'User Created',
-      text: '以下のURLをクリックして本登録を完了させてください。\n\n' + url,
+      from:process.env.EMAIL_USER,
+      subject: 'ユーザー本登録用URL',
+      html: '<b>以下のURLをクリックして本登録を完了させてください。\n\n</b>' + url,
     });
   }
 }

@@ -5,6 +5,7 @@ import { UsersResponseDto } from './dto/users.response.dto';
 import { createUserRequestDto } from './dto/create-user.request.dto';
 import { Response } from 'express';
 import { certificationUserRequestDto } from './dto/certification-user.request.dto';
+import { sendEmailRequestDto } from './dto/send-email.request.dto';
 
 @Controller('/user')
 export class UserController {

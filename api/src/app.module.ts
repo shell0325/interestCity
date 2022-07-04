@@ -1,3 +1,4 @@
+require('dotenv').config();
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -9,7 +10,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ChannelModule } from './modules/channel/channel.module';
 import { GenreModule } from './modules/genre/genre.module';
 import { TagModule } from './modules/tag/tag.module';
-import { SendGridModule } from '@anchan828/nest-sendgrid';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
 @Module({
   imports: [
@@ -23,8 +25,26 @@ import { SendGridModule } from '@anchan828/nest-sendgrid';
     ChannelModule,
     GenreModule,
     TagModule,
-    SendGridModule.forRoot({
-      apikey: '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',
+    MailerModule.forRoot({
+      transport: {
+        host: process.env.EMAIL_HOST,//email host
+        port: parseInt(process.env.EMAIL_PORT!),// email port
+        secure: false, // true for 465, false for other ports
+        auth: {
+          user: process.env.EMAIL_USER, // user email address
+          pass: process.env.EMAIL_PASS, // email password
+        },
+      },
+      defaults: {
+        from: '"nest-modules" <user@outlook.com>',
+      },
+      template: {
+        dir: process.cwd() + '/template/',
+        adapter: new HandlebarsAdapter(),
+        options: {
+          strict: true,
+        },
+      },
     }),
   ],
   controllers: [AppController],

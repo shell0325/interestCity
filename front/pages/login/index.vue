@@ -31,6 +31,7 @@
         </v-row>
         <v-btn @click="login()">ログイン</v-btn>
         <v-btn @click="register()">会員登録</v-btn>
+        <v-btn @click="guestLogin()">ゲストログイン</v-btn>
       </v-container>
     </v-form>
   </v-app>
@@ -91,6 +92,15 @@ export default {
           '本登録が終わっていないまたはパスワードもしくはEmailが間違っています'
         )
       }
+    },
+    async guestLogin() {
+      const response = await this.$auth.loginWith('local', {
+        data: {
+          email: process.env.GUEST_EMAIL,
+          password: process.env.GUEST_PASSWORD,
+        },
+      })
+      return response
     },
   },
 }

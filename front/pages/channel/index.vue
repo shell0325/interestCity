@@ -92,6 +92,7 @@
           tile
           large
           class="d-block text-center mx-auto mb-9"
+          :disabled="userId === 1"
           @click="registerGenre()"
         >
           <v-icon color="black">mdi-plus</v-icon>
@@ -128,8 +129,9 @@
           <v-list-item
             v-for="(channel, index) in channelData"
             v-show="
-              channel.user.some((channel) => channel.userId === userId) &&
-              channel.tag.length >= 3
+              (channel.user.some((channel) => channel.userId === userId) &&
+                channel.tag.length >= 3) ||
+              (userId === 1 && selectGenreIndex !== '')
             "
             :key="index"
           >
@@ -162,7 +164,7 @@
             </v-btn>
           </template>
           <v-list>
-            <v-list-item @click="createChannel()">
+            <v-list-item :disabled="userId === 1" @click="createChannel()">
               <v-list-item-title>新しいチャンネルを作成する</v-list-item-title>
             </v-list-item>
             <v-list-item @click="findJoinChannel()">
@@ -228,6 +230,7 @@
             dark
             small
             color="black"
+            :disabled="userId === 1"
             @click="postThreadComments()"
           >
             <v-icon>mdi-send</v-icon>
@@ -246,6 +249,7 @@
             accept="image/png, image/jpg, image/bmp"
             placeholder="Pick an avatar"
             prepend-icon="mdi-camera"
+            :disabled="userId === 1"
             label="Avatar"
             @change="select_file"
           ></v-file-input>
@@ -274,6 +278,7 @@
             <v-btn
               color="blue-grey"
               class="ma-2 white--text"
+              :disabled="userId === 1"
               @click="
                 editUserProfileImage()
                 editUser()
@@ -287,7 +292,7 @@
       </v-overlay>
       <v-card
         v-for="(comments, index) in bookmarkData"
-        v-show="showBookmark"
+        v-show="showBookmark && selectChannelIndex"
         :key="comments.id"
       >
         <v-list class="commentList">
@@ -296,6 +301,7 @@
               icon
               small
               color="yellow"
+              :disabled="userId === 1"
               @click="
                 selectCommentMouseover(comments.master_comment.id, index),
                   cancelBookmarks()
@@ -393,7 +399,7 @@
       </v-card>
       <v-card
         v-for="(comments, index) in channelCommentsData"
-        v-show="!showBookmark"
+        v-show="!showBookmark && selectChannelIndex"
         :key="index"
       >
         <v-list class="commentList">
@@ -406,6 +412,7 @@
               icon
               small
               color="yellow"
+              :disabled="userId === 1"
               @click="
                 selectCommentMouseover(comments.id, index), bookmarkComment()
               "
@@ -418,6 +425,7 @@
               "
               icon
               small
+              :disabled="userId === 1"
               @click="
                 selectCommentMouseover(comments.id, index), bookmarkComment()
               "
@@ -536,6 +544,7 @@
             icon
             small
             class="ml-5"
+            :disabled="userId === 1"
             @click="
               selectCommentMouseover(comments.id, index),
                 likesComment(),
@@ -553,6 +562,7 @@
             small
             class="ml-5"
             color="red"
+            :disabled="userId === 1"
             @click="
               selectCommentMouseover(comments.id, index)
               likesComment()
@@ -585,7 +595,7 @@
           fab
           dark
           small
-          :disabled="!selectGenreIndex || !selectChannelIndex"
+          :disabled="!selectGenreIndex || !selectChannelIndex || userId === 1"
           color="black"
           @click="postComment()"
         >
@@ -657,6 +667,8 @@ export default {
     this.username = this.$auth.user.username
     this.self_introduction = this.$auth.user.self_introduction
     this.userId = this.$auth.user.id
+    this.editUsername = this.$auth.user.username
+    this.editSelfIntroduction = this.$auth.user.self_introduction
     this.getGenre(this.$auth.user.id)
     this.getChannelComments(this.selectChannelIndex)
   },
@@ -703,7 +715,7 @@ export default {
 
     async getGenre() {
       const genre = await this.findGenre(this.$auth.user.id)
-      if (this.genreData.length === 0) {
+      if (this.genreData.length === 0 && this.$auth.user.id !== 1) {
         this.$router.push({
           path: '/genre',
         })
@@ -712,6 +724,7 @@ export default {
     },
 
     selectGenre(genreId, index) {
+      this.selectChannelIndex = ''
       this.selectGenreIndex = genreId
       this.selectGenreNum = index
     },
@@ -772,6 +785,7 @@ export default {
 
     async getBookmarkComments() {
       this.showBookmark = true
+      this.selectChannelIndex = ''
       const findBookmarkData = {
         genreId: this.selectGenreIndex,
         userId: this.userId,

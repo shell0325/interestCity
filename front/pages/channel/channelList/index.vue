@@ -5,23 +5,8 @@
       <v-btn @click="Channel()"><v-icon>mdi-home</v-icon></v-btn>
     </v-app-bar>
     <v-main>
-      <v-col class="pt-2 px-6">
-        <v-radio-group v-model="radio" hide-details row class="my-0">
-          <v-radio
-            label="チャンネル名"
-            value="channelName"
-            class="my-0"
-            @click="tagName = ''"
-          ></v-radio>
-          <v-radio
-            label="タグ名"
-            value="tagName"
-            class="my-0"
-            @click="channelName = ''"
-          ></v-radio>
-        </v-radio-group>
+      <v-col class=" pb-0 px-6">
         <v-text-field
-          v-if="radio === 'channelName'"
           v-model="channelName"
           label="チャンネル名"
           placeholder="チャンネル名"
@@ -29,16 +14,8 @@
           prepend-inner-icon="mdi-magnify"
           @keydown.enter="searchChannel"
         ></v-text-field>
-        <v-text-field
-          v-else-if="radio === 'tagName'"
-          v-model="tagName"
-          label="タグ名"
-          placeholder="タグ名"
-          solo
-          prepend-inner-icon="mdi-magnify"
-        ></v-text-field>
       </v-col>
-      <v-container v-show="!searchChannelName" class="pt-0 pb-4 px-6" fluid>
+      <v-container v-show="!searchChannelName" class=" pb-4 px-6" fluid>
         <v-row>
           <v-col cols="12">
             <v-card>
@@ -49,9 +26,11 @@
                 <template v-for="(channel, index) in channelData">
                   <v-list-item
                     v-show="
-                      channel.user.some(
+                      (channel.user.some(
                         (channel) => channel.userId === userId
-                      ) && channel.tag.length >= 3
+                      ) &&
+                        channel.tag.length >= 3) ||
+                      userId === 1
                     "
                     :key="index"
                     @mouseover="
@@ -67,6 +46,7 @@
                     </v-list-item-content>
                     <v-btn
                       v-show="selectParticipationIndex === channel.id"
+                      :disabled="userId === 1"
                       @click="channelExit()"
                       >退出する</v-btn
                     >
@@ -93,7 +73,9 @@
                 <template v-for="(channel, index) in channelData">
                   <v-list-item
                     v-show="
-                      !channel.user.some((channel) => channel.userId === userId)
+                      !channel.user.some(
+                        (channel) => channel.userId === userId
+                      ) && userId !== 1
                     "
                     :key="index"
                     @mouseover="
@@ -109,6 +91,7 @@
                     </v-list-item-content>
                     <v-btn
                       v-show="selectNonParticipationIndex === channel.id"
+                      :disabled="userId === 1"
                       @click="joinChannel()"
                       >参加する</v-btn
                     >
@@ -137,9 +120,11 @@
                 <template v-for="(channel, index) in channelList">
                   <v-list-item
                     v-show="
-                      channel.user.some(
+                      (channel.user.some(
                         (channel) => channel.userId === userId
-                      ) && channel.tag.length >= 3
+                      ) &&
+                        channel.tag.length >= 3) ||
+                      userId === 1
                     "
                     :key="index"
                     @mouseover="
@@ -155,6 +140,7 @@
                     </v-list-item-content>
                     <v-btn
                       v-show="selectParticipationIndex === channel.id"
+                      :disabled="userId === 1"
                       @click="channelExit()"
                       >退出する</v-btn
                     >
@@ -164,7 +150,9 @@
                     v-show="
                       channel.user.some(
                         (channel) => channel.userId === userId
-                      ) && channel.tag.length >= 3
+                      ) &&
+                      channel.tag.length >= 3 &&
+                      userId !== 1
                     "
                     :key="`divider-${index}`"
                   ></v-divider>
@@ -181,7 +169,9 @@
                 <template v-for="(channel, index) in channelList">
                   <v-list-item
                     v-show="
-                      !channel.user.some((channel) => channel.userId === userId)
+                      !channel.user.some(
+                        (channel) => channel.userId === userId
+                      ) && userId !== 1
                     "
                     :key="index"
                     @mouseover="
@@ -197,6 +187,7 @@
                     </v-list-item-content>
                     <v-btn
                       v-show="selectNonParticipationIndex === channel.id"
+                      :disabled="userId === 1"
                       @click="joinChannel()"
                       >参加する</v-btn
                     >
@@ -231,12 +222,9 @@ export default {
     selectNonParticipationIndex: '',
     selectNonParticipationNum: '',
     drawer: false,
-    radio: 'channelName',
     channelName: '',
-    tagName: '',
     channelList: [],
     searchChannelName: false,
-    searchTagName: false,
   }),
   computed: {
     ...mapGetters({

@@ -12,6 +12,7 @@ import { GenreModule } from './modules/genre/genre.module';
 import { TagModule } from './modules/tag/tag.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { FileUploadModule } from './modules/file-upload/file-upload.module';
 
 @Module({
   imports: [
@@ -27,12 +28,12 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
     TagModule,
     MailerModule.forRoot({
       transport: {
-        host: process.env.EMAIL_HOST,//email host
-        port: parseInt(process.env.EMAIL_PORT!),// email port
-        secure: false, // true for 465, false for other ports
+        host: process.env.MAIL_HOST, //email host
+        port: parseInt(process.env.EMAIL_PORT!), // email port
+        secure: true, // true for 465, false for other ports
         auth: {
-          user: process.env.EMAIL_USER, // user email address
-          pass: process.env.EMAIL_PASS, // email password
+          user: process.env.MAIL_USER, // user email address
+          pass: process.env.MAIL_PASS, // email password
         },
       },
       defaults: {
@@ -46,6 +47,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
         },
       },
     }),
+    FileUploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],

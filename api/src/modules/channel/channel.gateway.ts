@@ -12,6 +12,7 @@ import { Server, Socket } from 'socket.io';
 import { registerGenreRequestDto } from '../genre/dto/register-genre.request.dto';
 import { GenreService } from '../genre/genre.service';
 import { editUserDataRequestDto } from '../user/dto/edit-user-data.request.dto';
+import { registerProfileImageRequestDto } from '../user/dto/registerProfileImage.request.dto';
 import { UserService } from '../user/user.service';
 import { ChannelService } from './channel.service';
 import { editCommentRequestDto } from './dto/edit-comment.request.dto';
@@ -20,6 +21,7 @@ import { joinChannelRequestDto } from './dto/join-channel.request.dto';
 import { postThreadCommentRequestDto } from './dto/post-thread-comment.dto';
 import { bookmarkCommentRequestDto } from './dto/register-bookmark-comment.request.dto';
 import { likesCommentRequestDto } from './dto/register-likes-comment.request.dto';
+import { registerPictureRequestDto } from './dto/registerPicture.request.dto';
 import { sendCommentRequestDto } from './dto/sendComment.request.dto';
 
 @WebSocketGateway({
@@ -59,9 +61,21 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   }
 
   @SubscribeMessage('sendComment')
-  async sendComment(socket: Socket, @MessageBody() commentData: sendCommentRequestDto) {
+  async sendComments(socket: Socket, @MessageBody() commentData: sendCommentRequestDto) {
     const comment = await this._channelService.sendComment(commentData);
-    this.server.emit('post_message', comment);
+    this.server.emit('post_message', comment.comment);
+  }
+
+  @SubscribeMessage('sendPicture')
+  async sendPicture(client: Socket, file: any) {
+    const sendPicture = await this._channelService.sendPicture(file[0], file[1]);
+    this.server.emit('sendPictureData', sendPicture);
+  }
+
+  @SubscribeMessage('registerCommentPicture')
+  async registerCommentPicture(client: Socket, pictureData: registerPictureRequestDto) {
+    const editProfileData = await this._channelService.registerPicturePath(pictureData);
+    this.server.emit('editUserProfileImageData', editProfileData);
   }
 
   @SubscribeMessage('request_channel_comments')
@@ -73,7 +87,7 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   @SubscribeMessage('editComment')
   async editComment(client: Socket, editCommentData: editCommentRequestDto) {
     const comment = await this._channelService.editComment(editCommentData);
-    this.server.emit('commentData', comment);
+    this.server.emit('editCommentData', comment);
   }
 
   @SubscribeMessage('deleteComment')
@@ -124,6 +138,24 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     this.server.emit('editUserData', findUser);
   }
 
+  @SubscribeMessage('registerProfileImage')
+  async registerProfileImage(client: Socket, file: any) {
+    const registerProfileImage = await this._userService.addAvatar(file[0], file[1]);
+    this.server.emit('registerProfileImageData', registerProfileImage);
+  }
+
+  @SubscribeMessage('editUserProfileImage')
+  async editUserProfileImage(client: Socket, profileImageData: registerProfileImageRequestDto) {
+    const editProfileData = await this._userService.registerProfileImage(profileImageData);
+    this.server.emit('editUserProfileImageData', editProfileData);
+  }
+
+  @SubscribeMessage('deleteProfileImage')
+  async deleteProfileImage(client: Socket, email: string) {
+    const deleteProfileImage = await this._userService.deleteProfileImage(email);
+    this.server.emit('deleteProfileImageData', deleteProfileImage);
+  }
+
   @SubscribeMessage('findUserProfile')
   async findUserProfile(client: Socket, userId: number) {
     const userProfile = await this._userService.findUserProfile(userId);
@@ -132,9 +164,9 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
   @SubscribeMessage('registerGenre')
   async registerGenre(client: Socket, registerData: registerGenreRequestDto) {
-    const genre = await this._genreService.registerGenre(registerData)
-    this.server.emit('registerData',genre)
-    }
+    const genre = await this._genreService.registerGenre(registerData);
+    this.server.emit('registerData', genre);
+  }
 
   afterInit(server: Server) {
     this.logger.log('起動しました');

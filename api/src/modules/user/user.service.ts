@@ -11,11 +11,15 @@ import { editUserDataRequestDto } from './dto/edit-user-data.request.dto';
 import { sendEmailRequestDto } from './dto/send-email.request.dto';
 import { certificationUserRequestDto } from './dto/certification-user.request.dto';
 import { MailerService } from '@nestjs-modules/mailer';
+import { FileUploadService } from '../file-upload/file-upload.service';
+import { S3 } from 'aws-sdk';
+import { registerProfileImageRequestDto } from './dto/registerProfileImage.request.dto';
 
 @Injectable()
 export class UserService implements IUserService {
   constructor(
     private readonly mailerService: MailerService,
+    private readonly _fileService: FileUploadService,
     @InjectRepository(User)
     private readonly _userRepository: Repository<User>,
   ) {}
@@ -141,9 +145,48 @@ export class UserService implements IUserService {
 
     this.mailerService.sendMail({
       to: userData.email,
-      from:process.env.EMAIL_USER,
+      from: process.env.EMAIL_USER,
       subject: 'ユーザー本登録用URL',
       html: '<b>以下のURLをクリックして本登録を完了させてください。\n\n</b>' + url,
     });
+  }
+
+  async registerProfileImage(
+    registerProfileImageData: registerProfileImageRequestDto,
+  ): Promise<UserResponseDto> {
+    const email = registerProfileImageData.email;
+    const profileImagePath = registerProfileImageData.profileImagePath;
+    const key = registerProfileImageData.key;
+    const userData = await this._userRepository.findOne({ where: { email } });
+    if (!userData) throw new NotFoundException();
+    const user = await this._userRepository.save({
+      ...userData,
+      profileImagePath,
+      key,
+    });
+    return { user };
+  }
+
+  async deleteProfileImage(email: string) {
+    const s3 = new S3();
+    const userData = await this._userRepository.find({ where: { email } });
+    if (userData[0].key === null) {
+      return email;
+    }
+    if (userData[0].key !== '' && userData[0].key !== null) {
+      const deleteResult = await s3
+        .deleteObject({
+          Bucket: process.env.AWS_PUBLIC_BUCKET_NAME!,
+          Key: userData[0].key,
+        })
+        .promise();
+      return deleteResult;
+    }
+    return userData;
+  }
+
+  async addAvatar(imageBuffer: Buffer, filename: string) {
+    const avatar = await this._fileService.uploadPublicFile(imageBuffer, filename);
+    return avatar;
   }
 }

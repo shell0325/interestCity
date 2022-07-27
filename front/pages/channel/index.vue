@@ -15,8 +15,21 @@
             v-bind="attrs"
             v-on="on"
           >
-            <v-avatar class="d-block mr-3" color="blue" size="40" rounded>
+            <v-avatar
+              v-if="!userProfile.profileImagePath"
+              class="d-block mr-3"
+              color="blue"
+              size="40"
+              rounded
+            >
               <span class="white--text headline">{{ topName }}</span>
+            </v-avatar>
+            <v-avatar
+              v-else-if="userProfile.profileImagePath"
+              size="40"
+              rounded
+            >
+              <img :src="`${userProfile.profileImagePath}`" />
             </v-avatar>
           </v-btn>
         </template>
@@ -24,8 +37,21 @@
         <v-card>
           <v-list>
             <v-list-item>
-              <v-avatar class="d-block mr-3" color="blue" size="40" rounded>
+              <v-avatar
+                v-if="!userProfile.profileImagePath"
+                class="d-block mr-3"
+                color="blue"
+                size="40"
+                rounded
+              >
                 <span class="white--text headline">{{ topName }}</span>
+              </v-avatar>
+              <v-avatar
+                v-else-if="userProfile.profileImagePath"
+                size="40"
+                rounded
+              >
+                <img :src="`${userProfile.profileImagePath}`" />
               </v-avatar>
               <v-list-item-content>
                 <v-list-item-title>{{
@@ -239,12 +265,18 @@
       </v-footer>
     </v-navigation-drawer>
     <v-main v-show="showComment" class="main">
-      <v-overlay :value="overlay" class="overlay" :absolute="absolute">
+      <v-overlay
+        opacity="0.9"
+        :value="overlay"
+        class="overlay justify-center"
+        :absolute="absolute"
+      >
         <v-card width="700" class="editUser">
           <v-btn icon small class="closeBtn" @click="overlay = false">
             <v-icon> mdi-window-close </v-icon>
           </v-btn>
           <v-file-input
+            v-if="profilePicture"
             :rules="fileRules"
             accept="image/png, image/jpg, image/bmp"
             placeholder="Pick an avatar"
@@ -274,14 +306,20 @@
             ></v-textarea>
           </v-col>
           <v-card-actions class="editBtn">
+            <v-checkbox
+              v-model="selected"
+              label="プロフィール写真を変更しない"
+              @click="selected = true"
+            ></v-checkbox>
             <v-btn class="ma-1" plain @click="overlay = false"> Cancel </v-btn>
             <v-btn
               color="blue-grey"
               class="ma-2 white--text"
               :disabled="userId === 1"
               @click="
-                editUserProfileImage()
+                editProfileImage()
                 editUser()
+                overlay = false
               "
             >
               Upload
@@ -291,9 +329,9 @@
         </v-card>
       </v-overlay>
       <v-card
-        v-for="(comments, index) in bookmarkData"
-        v-show="showBookmark && selectChannelIndex"
-        :key="comments.id"
+        v-for="(bookmarkComments, index) in bookmarkData"
+        v-show="showBookmark && !selectChannelIndex"
+        :key="`first-${index}`"
       >
         <v-list class="commentList">
           <v-card class="commentBtn">
@@ -303,7 +341,10 @@
               color="yellow"
               :disabled="userId === 1"
               @click="
-                selectCommentMouseover(comments.master_comment.id, index),
+                selectCommentMouseover(
+                  bookmarkComments.master_comment.id,
+                  index
+                ),
                   cancelBookmarks()
               "
               ><v-icon>mdi-star</v-icon></v-btn
@@ -318,7 +359,7 @@
             <v-menu bottom offset-x offset-y :nudge-width="150">
               <template #activator="{ on, attrs }">
                 <v-btn
-                  v-show="comments.user.id === userId"
+                  v-show="bookmarkComments.user.id === userId"
                   icon
                   small
                   v-bind="attrs"
@@ -335,7 +376,7 @@
                         class="px-0"
                         @click="
                           selectCommentMouseover(
-                            comments.master_comment.id,
+                            bookmarkComments.master_comment.id,
                             index
                           ),
                             editComment()
@@ -351,7 +392,7 @@
                         class="px-0"
                         @click="
                           selectCommentMouseover(
-                            comments.master_comment.id,
+                            bookmarkComments.master_comment.id,
                             index
                           ),
                             deleteComments()
@@ -370,7 +411,7 @@
               <v-textarea
                 v-show="
                   editComments &&
-                  selectCommentIndex === comments.master_comment.id
+                  selectCommentIndex === bookmarkComments.master_comment.id
                 "
                 v-model="comment"
                 background-color="grey lighten-1"
@@ -384,15 +425,43 @@
               >
               </v-textarea>
 
-              <v-list-item>
+              <v-list-item class="pl-0">
+                <v-avatar
+                  v-if="!bookmarkComments.user.profileImagePath"
+                  class="d-block mr-3"
+                  color="blue"
+                  size="30"
+                  rounded
+                >
+                  <span class="white--text headline">{{ topName }}</span>
+                </v-avatar>
+                <v-avatar
+                  v-else-if="bookmarkComments.user.profileImagePath"
+                  class="d-block mr-3"
+                  size="30"
+                  rounded
+                >
+                  <img :src="`${bookmarkComments.user.profileImagePath}`" />
+                </v-avatar>
+
                 <v-list-item-title class="commentUsername">{{
-                  comments.user.username
+                  bookmarkComments.user.username
                 }}</v-list-item-title>
                 <v-list-item-title>{{
-                  comments.master_comment.createdAt
+                  bookmarkComments.master_comment.createdAt
                 }}</v-list-item-title>
               </v-list-item>
-              <v-card-text>{{ comments.master_comment.comment }}</v-card-text>
+              <v-card-text>{{
+                bookmarkComments.master_comment.comment
+              }}</v-card-text>
+              <v-img
+                v-show="bookmarkComments.master_comment.picture"
+                class="ml-11"
+                :lazy-src="`${bookmarkComments.master_comment.picture}`"
+                max-height="150"
+                max-width="250"
+                :src="`${bookmarkComments.master_comment.picture}`"
+              ></v-img>
             </v-list-item-content>
           </v-list-item>
         </v-list>
@@ -400,7 +469,7 @@
       <v-card
         v-for="(comments, index) in channelCommentsData"
         v-show="!showBookmark && selectChannelIndex"
-        :key="index"
+        :key="`second-${index}`"
       >
         <v-list class="commentList">
           <v-card class="commentBtn">
@@ -527,13 +596,40 @@
             <v-list-item-content
               v-show="!editComments || selectCommentIndex !== comments.id"
             >
-              <v-list-item>
+              <v-list-item class="pl-0 commentItemList">
+                <v-avatar
+                  v-if="!comments.user.profileImagePath"
+                  class="d-block mr-3"
+                  color="blue"
+                  size="30"
+                  rounded
+                >
+                  <span class="white--text headline">{{ topName }}</span>
+                </v-avatar>
+                <v-avatar
+                  v-else-if="comments.user.profileImagePath"
+                  class="d-block mr-3"
+                  size="30"
+                  rounded
+                >
+                  <img :src="`${comments.user.profileImagePath}`" />
+                </v-avatar>
                 <v-list-item-title class="commentUsername">{{
                   comments.user.username
                 }}</v-list-item-title>
                 <v-list-item-title>{{ comments.createdAt }}</v-list-item-title>
               </v-list-item>
-              <v-card-text>{{ comments.comment }}</v-card-text>
+              <v-card-text class="commentText">{{
+                comments.comment
+              }}</v-card-text>
+              <v-img
+                v-show="comments.picture"
+                class="ml-11"
+                :lazy-src="`${comments.picture}`"
+                max-height="150"
+                max-width="250"
+                :src="`${comments.picture}`"
+              ></v-img>
             </v-list-item-content>
           </v-list-item>
           <v-btn
@@ -543,7 +639,7 @@
             "
             icon
             small
-            class="ml-5"
+            class="ml-11"
             :disabled="userId === 1"
             @click="
               selectCommentMouseover(comments.id, index),
@@ -576,7 +672,17 @@
       <!--チャンネルのコメントを表示する部分-->
     </v-main>
     <!-- 文字を入力する部分 -->
-    <v-footer app color="transparent" inset margin-bottom="0" class="footer">
+    <v-footer app dark inset margin-bottom="0" class="footer">
+      <v-file-input
+        v-if="commentPicture"
+        class="inputFile"
+        :rules="sendPictureRules"
+        accept="image/png, image/jpeg, image/bmp"
+        placeholder="写真を選択してください"
+        prepend-icon="mdi-camera"
+        label="picture"
+        @change="selectSendFile"
+      ></v-file-input>
       <v-textarea
         v-model="comment"
         background-color="grey lighten-1"
@@ -595,7 +701,9 @@
           fab
           dark
           small
-          :disabled="!selectGenreIndex || !selectChannelIndex || userId === 1"
+          :disabled="
+            !selectGenreIndex || !selectChannelIndex || userId === 1 || !comment
+          "
           color="black"
           @click="postComment()"
         >
@@ -648,6 +756,17 @@ export default {
       absolute: true,
       editComments: false,
       showBookmark: false,
+      profileImagePath: '',
+      sendPictureData: '',
+      sendPictureRules: [
+        (value) =>
+          !value ||
+          value.size < 2000000 ||
+          'Avatar size should be less than 2 MB!',
+      ],
+      selected: false,
+      commentPicture: true,
+      profilePicture: true,
     }
   },
   computed: {
@@ -667,7 +786,7 @@ export default {
     this.username = this.$auth.user.username
     this.self_introduction = this.$auth.user.self_introduction
     this.userId = this.$auth.user.id
-    this.editUsername = this.$auth.user.username
+    this.editUsername = this.userProfile.username
     this.editSelfIntroduction = this.$auth.user.self_introduction
     this.getGenre(this.$auth.user.id)
     this.getChannelComments(this.selectChannelIndex)
@@ -686,24 +805,29 @@ export default {
       postThreadComment: 'channel/postThreadComment',
       likesComments: 'channel/likesComments',
       editUserProfile: 'channel/editUserProfile',
-      editProfileImage: 'channel/editProfileImage',
       findUserProfile: 'channel/findUserProfile',
       deleteComment: 'channel/deleteComment',
       cancelBookmark: 'channel/cancelBookmark',
       saveComment: 'channel/editComment',
+      editUserProfileImage: 'channel/editUserProfileImage',
     }),
 
-    postComment() {
-      if (this.comment) {
-        const commentData = {
-          comment: this.comment,
-          userId: this.$auth.user.id,
-          channelId: this.channelData[this.selectChannelNum].id,
-        }
-        this.sendComment(commentData)
-        this.comment = ''
-        return { commentData }
+    async postComment() {
+      this.commentPicture = false
+      const commentData = {
+        comment: this.comment,
+        userId: this.$auth.user.id,
+        channelId: this.channelData[this.selectChannelNum].id,
+        postImage: this.sendPictureData,
+        pictureName:this.sendPictureData.name
       }
+      await this.sendComment(commentData)
+      this.$nextTick(() => {
+        this.commentPicture = true
+      })
+      this.comment = ''
+      this.sendPictureData = ''
+      return { commentData }
     },
 
     createChannel() {
@@ -784,8 +908,8 @@ export default {
     },
 
     async getBookmarkComments() {
-      this.showBookmark = true
       this.selectChannelIndex = ''
+      this.showBookmark = true
       const findBookmarkData = {
         genreId: this.selectGenreIndex,
         userId: this.userId,
@@ -832,6 +956,14 @@ export default {
       this.likesComments(likesCommentData)
     },
 
+    select_file(file) {
+      this.editProfileImagePath = file
+    },
+
+    selectSendFile(file) {
+      this.sendPictureData = file
+    },
+
     async editUser() {
       const editUserData = {
         userId: this.userId,
@@ -844,16 +976,18 @@ export default {
       this.editSelfIntroduction = ''
     },
 
-    select_file(file) {
-      this.editProfileImagePath = file
-    },
-
-    editUserProfileImage() {
+    editProfileImage() {
+      this.profilePicture = false
       const editData = {
+        userId: this.$auth.user.id,
         email: this.$auth.user.email,
         filePath: this.editProfileImagePath,
+        select: this.selected,
       }
-      this.editProfileImage(editData)
+      this.editUserProfileImage(editData)
+      this.$nextTick(() => {
+        this.profilePicture = true
+      })
     },
 
     async findUser(userId) {
@@ -995,6 +1129,7 @@ export default {
 }
 .v-list-item__content {
   padding: 0;
+  display: block;
 }
 .channelName {
   text-align: center;
@@ -1014,6 +1149,7 @@ export default {
 }
 .overlay {
   position: absolute;
+  align-items: flex-start;
 }
 .v-overlay__content {
   border: 2px white solid;
@@ -1045,5 +1181,14 @@ export default {
 .v-application--is-ltr .v-list-item__action:last-of-type:not(:only-child) {
   display: block;
   margin: auto;
+}
+.inputFile {
+  width: 95%;
+  margin: auto;
+}
+.commentText {
+  font-size: large;
+  width: 97%;
+  margin-left: auto;
 }
 </style>

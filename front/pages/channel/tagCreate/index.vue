@@ -15,7 +15,7 @@
           :disabled="!tagName"
           color="success"
           class="mr-4"
-          @click="addTag(tagName)"
+          @click="addTag(tagName), (tagName = '')"
         >
           タグを追加
         </v-btn>

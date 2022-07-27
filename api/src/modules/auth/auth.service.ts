@@ -14,6 +14,7 @@ interface JWTPayload {
   certification: User['certification'];
   self_Introduction: User['self_introduction'];
   profileImage: User['profileImagePath'];
+  key: User['key'];
   created_at: User['createdAt'];
   updated_at: User['updatedAt'];
 }
@@ -44,9 +45,10 @@ export class AuthService implements IAuthService {
       id: user.id,
       username: user.username,
       email: user.email,
-      certification:user.certification,
+      certification: user.certification,
       self_Introduction: user.self_introduction,
       profileImage: user.profileImagePath,
+      key: user.key,
       created_at: user.createdAt,
       updated_at: user.updatedAt,
     };
@@ -65,9 +67,10 @@ export class AuthService implements IAuthService {
       id: user.id,
       username: user.username,
       email: user.email,
-      certification:user.certification,
+      certification: user.certification,
       self_Introduction: user.self_introduction,
       profileImage: user.profileImagePath,
+      key: user.key,
       created_at: user.createdAt,
       updated_at: user.updatedAt,
     };

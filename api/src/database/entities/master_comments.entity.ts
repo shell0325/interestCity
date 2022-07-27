@@ -21,6 +21,12 @@ export class Master_Comment {
   @Column('text', { name: 'comment' })
   comment: Text[];
 
+  @Column('varchar', { name: 'picture', length: 255, nullable: true })
+  picture: string;
+
+  @Column('varchar', { name: 'key', length: 255, nullable: true })
+  key: string;
+
   @Column('tinyint', { name: 'user_id' })
   userId: number;
   @ManyToOne(() => User, {

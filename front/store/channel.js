@@ -107,7 +107,7 @@ export const mutations = {
 export const actions = {
   sendComment({ commit }, comment) {
     socket.emit('sendComment', comment)
-    socket.on('post_message', data => {
+    socket.on('post_message', commentData => {
       socket.emit('request_channel_comments', comment.channelId)
     })
   },
@@ -227,19 +227,51 @@ export const actions = {
     })
   },
 
-  async editProfileImage({ commit }, editUserData) {
-    if (editUserData.filePath !== '') {
-      const formData = new FormData()
-      formData.append('file', editUserData.filePath)
-      await this.$axios
-        .post('http://localhost:3000/user/file', formData)
-        .then(async (res) => {
-          await this.$axios.post('http://localhost:3000/user/saveFile', {
-            email: editUserData.email,
-            filePath: res.data.data.path,
-          })
+  editUserProfileImage({ commit }, editUserData) {
+    if (editUserData.filePath === '' && editUserData.select === false) {
+      const Key = ''
+      const profileData = {
+        email: editUserData.email,
+        profileImagePath: editUserData.filePath,
+        key: Key
+      }
+      socket.emit('editUserProfileImage', profileData)
+      socket.on('editUserProfileImageData', data => {
+        socket.emit('deleteProfileImage', editUserData.email)
+        socket.on('deleteProfileImageData', deleteData => {
+          commit('setUserProfile', data.user)
+          const topName = data.user.username.slice(0, 1)
+          commit('setTopName', topName)
+
+          return deleteData
         })
+      })
+      return editUserData
     }
+    else if (editUserData.select === true) {
+      return editUserData
+    }
+    socket.emit('registerProfileImage', editUserData.filePath, editUserData.filePath.name)
+    socket.on('registerProfileImageData', data => {
+      if (data.Key !== '') {
+        socket.emit('deleteProfileImage', editUserData.email)
+        socket.on('deleteProfileImageData', deleteData => {
+          return deleteData
+        })
+      }
+      const editUserProfileData = {
+        email: editUserData.email,
+        profileImagePath: data.Location,
+        key: data.Key
+      }
+      socket.emit('editUserProfileImage', editUserProfileData)
+      socket.on('editUserProfileImageData', userData => {
+        commit('setUserProfile', userData.user)
+        const topName = userData.user.username.slice(0, 1)
+        commit('setTopName', topName)
+
+      })
+    })
   },
 
   findUserProfile({ commit }, userId) {
@@ -265,14 +297,9 @@ export const actions = {
       comment: editCommentData.comment
     }
     socket.emit('editComment', editComment)
-    socket.on('commentData', data => {
+    socket.on('editCommentData', data => {
       socket.emit('request_channel_comments', editCommentData.channelId)
     })
-  },
-
-  async findGenreData({ commit }, id) {
-    const genre = await this.$axios.$get('http://localhost:3000/genre/find', 1)
-    commit('setGenreData', genre)
   },
 
   registerGenre({ commit }, genreData) {

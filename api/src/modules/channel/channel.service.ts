@@ -7,6 +7,7 @@ import { Master_Comment } from 'src/database/entities/master_comments.entity';
 import { Sub_Comment } from 'src/database/entities/sub_comments.entity';
 import { Users_Channels } from 'src/database/entities/users_channels.entity';
 import { DeleteResult, Repository } from 'typeorm';
+import { FileUploadService } from '../file-upload/file-upload.service';
 import { BookmarkResponseDto } from './dto/bookmark.response.dto';
 import { BookmarksResponseDto } from './dto/bookmarks.response.dto';
 import { ChannelResponseDto } from './dto/channel.response.dto';
@@ -21,14 +22,17 @@ import { LikeResponseDto } from './dto/like.response.dto';
 import { postThreadCommentRequestDto } from './dto/post-thread-comment.dto';
 import { bookmarkCommentRequestDto } from './dto/register-bookmark-comment.request.dto';
 import { likesCommentRequestDto } from './dto/register-likes-comment.request.dto';
+import { registerPictureRequestDto } from './dto/registerPicture.request.dto';
 import { sendCommentRequestDto } from './dto/sendComment.request.dto';
 import { SubCommentResponseDto } from './dto/sub-comment.response.dto';
 import { SubCommentsResponseDto } from './dto/sub-comments.response.dto';
 import { UsersChannelResponseDto } from './dto/user-channel.response.dto';
+import { S3 } from 'aws-sdk';
 
 @Injectable()
 export class ChannelService {
   constructor(
+    private readonly _fileService: FileUploadService,
     @InjectRepository(Channel)
     private readonly _channelRepository: Repository<Channel>,
     @InjectRepository(Users_Channels)
@@ -83,7 +87,25 @@ export class ChannelService {
   }
 
   async sendComment(commentData: sendCommentRequestDto): Promise<CommentResponseDto> {
-    const comment = await this._masterCommentRepository.save(commentData);
+    const commentsData = {
+      comment: commentData.comment,
+      channelId: commentData.channelId,
+      userId: commentData.userId,
+      postImage: commentData.postImage,
+      pictureName: commentData.pictureName,
+    };
+    if (commentData.postImage !== '') {
+      const comment = await this._masterCommentRepository.save(commentsData);
+      const postPicture = await this.sendPicture(commentData.postImage, commentData.pictureName);
+      const registerPictureData = {
+        commentId: comment.id,
+        picture: postPicture.Location,
+        key: postPicture.Key,
+      };
+      const registerPicture = await this.registerPicturePath(registerPictureData);
+      return { comment };
+    }
+    const comment = await this._masterCommentRepository.save(commentsData);
     return { comment };
   }
 
@@ -114,7 +136,23 @@ export class ChannelService {
     return { comment };
   }
 
-  async deleteComment(master_commentId: number): Promise<DeleteResult> {
+  async deleteComment(master_commentId: number) {
+    const s3 = new S3();
+    const comment = await this._masterCommentRepository.find({
+      id: master_commentId,
+    });
+    if (comment[0].picture !== null) {
+      const deleteResult = await s3
+        .deleteObject({
+          Bucket: process.env.AWS_PUBLIC_BUCKET_NAME!,
+          Key: comment[0].key,
+        })
+        .promise();
+      const deleteComments = await this._masterCommentRepository.delete({
+        id: master_commentId,
+      });
+      return deleteComments;
+    }
     const deleteComments = await this._masterCommentRepository.delete({
       id: master_commentId,
     });
@@ -191,5 +229,25 @@ export class ChannelService {
       relations: ['user', 'master_comment'],
     });
     return { subComment };
+  }
+
+  async sendPicture(imageBuffer: Buffer, filename: string) {
+    const picture = await this._fileService.uploadPublicFile(imageBuffer, filename);
+    return picture;
+  }
+
+  async registerPicturePath(pictureData: registerPictureRequestDto) {
+    const picture = pictureData.picture;
+    const key = pictureData.key;
+    const comment = await this._masterCommentRepository.findOne({
+      where: { id: pictureData.commentId },
+    });
+    if (!comment) throw new NotFoundException();
+    const master_comment = await this._masterCommentRepository.save({
+      ...comment,
+      picture,
+      key,
+    });
+    return master_comment;
   }
 }

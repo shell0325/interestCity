@@ -13,4 +13,13 @@ export class sendCommentRequestDto {
   @IsNotEmpty()
   @ApiProperty()
   channelId: number;
+
+  @IsNotEmpty()
+  @ApiProperty()
+  postImage: any;
+
+  @IsNotEmpty()
+  @ApiProperty()
+  pictureName: string;
+
 }

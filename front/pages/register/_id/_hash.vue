@@ -2,7 +2,7 @@
   <v-app>
     <p v-show="getterUser.certification === false">登録完了しました。</p>
     <p v-show="getterUser.certification === true">登録済みです。</p>
-    <v-btn class="login" @click="login">ログインページへ</v-btn>
+    <nuxt-link to="/login">ログインページへ遷移</nuxt-link>
   </v-app>
 </template>
 
@@ -40,6 +40,9 @@ export default {
       if (time > nowTime === false) {
         this.certification = 'このURLはすでに有効期限切れか、正しくありません。'
         alert('このURLはすでに有効期限切れか、正しくありません。')
+        this.$router.push({
+          path: '/register',
+        })
       } else {
         const certificationData = {
           userId,
@@ -50,9 +53,7 @@ export default {
     },
 
     login() {
-      this.$router.push({
-        path: '/login',
-      })
+      this.$router.push('/register')
     },
   },
 }

@@ -20,7 +20,7 @@ export class User {
   @Column('varchar', { name: 'password', length: 100 })
   password: string;
 
-  @Column('boolean', { name: 'certification',default:false })
+  @Column('boolean', { name: 'certification', default: false })
   certification: boolean;
 
   @Column('varchar', { name: 'self_introduction', length: 255, nullable: true })
@@ -28,6 +28,9 @@ export class User {
 
   @Column('varchar', { name: 'profileImage', nullable: true })
   profileImagePath: string;
+
+  @Column('varchar', { name: 'key', nullable: true })
+  key: string;
 
   @CreateDateColumn({ name: 'created_at' })
   readonly createdAt!: Date;

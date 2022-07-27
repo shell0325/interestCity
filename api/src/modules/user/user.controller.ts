@@ -5,7 +5,6 @@ import { UsersResponseDto } from './dto/users.response.dto';
 import { createUserRequestDto } from './dto/create-user.request.dto';
 import { Response } from 'express';
 import { certificationUserRequestDto } from './dto/certification-user.request.dto';
-import { sendEmailRequestDto } from './dto/send-email.request.dto';
 
 @Controller('/user')
 export class UserController {
@@ -33,6 +32,7 @@ export class UserController {
 
     return new OkResponse(responseData);
   }
+
   @Post('logout')
   async logout(@Res({ passthrough: true }) response: Response) {
     response.clearCookie('jwt');

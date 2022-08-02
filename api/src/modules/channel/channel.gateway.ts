@@ -12,17 +12,17 @@ import { Server, Socket } from 'socket.io';
 import { registerGenreRequestDto } from '../genre/dto/register-genre.request.dto';
 import { GenreService } from '../genre/genre.service';
 import { editUserDataRequestDto } from '../user/dto/edit-user-data.request.dto';
-import { registerProfileImageRequestDto } from '../user/dto/registerProfileImage.request.dto';
+import { registerProfileImageRequestDto } from '../user/dto/register-profileImage.request.dto';
 import { UserService } from '../user/user.service';
 import { ChannelService } from './channel.service';
 import { editCommentRequestDto } from './dto/edit-comment.request.dto';
 import { findBookmarkRequestDto } from './dto/find-bookmark.request.dto';
 import { joinChannelRequestDto } from './dto/join-channel.request.dto';
-import { postThreadCommentRequestDto } from './dto/post-thread-comment.dto';
-import { bookmarkCommentRequestDto } from './dto/register-bookmark-comment.request.dto';
-import { likesCommentRequestDto } from './dto/register-likes-comment.request.dto';
-import { registerPictureRequestDto } from './dto/registerPicture.request.dto';
-import { sendCommentRequestDto } from './dto/sendComment.request.dto';
+import { sendThreadCommentRequestDto } from './dto/send-thread-comment.dto';
+import { toggleBookmarkRequestDto } from './dto/toggle-bookmark.request.dto';
+import { toggleLikeRequestDto } from './dto/toggle-like.request.dto';
+import { registerPictureRequestDto } from './dto/register-picture.request.dto';
+import { sendCommentRequestDto } from './dto/send-comment.request.dto';
 
 @WebSocketGateway({
   namespace: '/chat',
@@ -45,7 +45,7 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   @SubscribeMessage('findChannel')
   async findChannel(client: Socket, genreId: number) {
     const channels = await this._channelService.findChannel(genreId);
-    this.server.emit('channelData', channels);
+    this.server.emit('channelData', channels.channels);
   }
 
   @SubscribeMessage('joinChannel')
@@ -63,7 +63,7 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   @SubscribeMessage('sendComment')
   async sendComments(socket: Socket, @MessageBody() commentData: sendCommentRequestDto) {
     const comment = await this._channelService.sendComment(commentData);
-    this.server.emit('post_message', comment.comment);
+    this.server.emit('sendCommentData', comment.comment);
   }
 
   @SubscribeMessage('sendPicture')
@@ -75,13 +75,13 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   @SubscribeMessage('registerCommentPicture')
   async registerCommentPicture(client: Socket, pictureData: registerPictureRequestDto) {
     const editProfileData = await this._channelService.registerPicturePath(pictureData);
-    this.server.emit('editUserProfileImageData', editProfileData);
+    this.server.emit('registerPictureData', editProfileData);
   }
 
-  @SubscribeMessage('request_channel_comments')
+  @SubscribeMessage('getChannelComments')
   async requestChannelComments(socket: Socket, channelId: number) {
     const comments = await this._channelService.getChannelComments(channelId);
-    this.server.emit('channel_comments', comments);
+    this.server.emit('channelCommentsData', comments.comments);
   }
 
   @SubscribeMessage('editComment')
@@ -96,28 +96,28 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     this.server.emit('deleteCommentData', deleteComments);
   }
 
-  @SubscribeMessage('likesComment')
-  async likesComment(client: Socket, likesCommentData: likesCommentRequestDto) {
-    const likesCount = await this._channelService.likesComment(likesCommentData);
-    this.server.emit('likesCountData', likesCount);
+  @SubscribeMessage('toggleLike')
+  async toggleLike(client: Socket, toggleLikeData: toggleLikeRequestDto) {
+    const likesCount = await this._channelService.toggleLike(toggleLikeData);
+    this.server.emit('toggleLikeData', likesCount);
   }
 
-  @SubscribeMessage('bookmarkComment')
-  async bookmarkComment(client: Socket, bookmarkCommentData: bookmarkCommentRequestDto) {
-    const bookmarkComment = await this._channelService.bookmarkComment(bookmarkCommentData);
-    this.server.emit('commentData', bookmarkComment);
+  @SubscribeMessage('toggleBookmark')
+  async toggleBookmark(client: Socket, toggleBookmarkData: toggleBookmarkRequestDto) {
+    const toggleBookmark = await this._channelService.toggleBookmark(toggleBookmarkData);
+    this.server.emit('toggleBookmarkData', toggleBookmark);
   }
 
   @SubscribeMessage('findBookmarkComment')
   async findBookmarkComment(client: Socket, findBookmarkData: findBookmarkRequestDto) {
-    const bookmarkComment = await this._channelService.findBookmarkComments(findBookmarkData);
-    this.server.emit('bookmarkCommentData', bookmarkComment);
+    const toggleBookmark = await this._channelService.findBookmarkComments(findBookmarkData);
+    this.server.emit('bookmarkCommentData', toggleBookmark.bookmarks);
   }
 
-  @SubscribeMessage('postThreadComment')
-  async postThreadComment(client: Socket, threadCommentData: postThreadCommentRequestDto) {
-    const subComment = await this._channelService.postThreadComment(threadCommentData);
-    this.server.emit('postThreadCommentData', subComment);
+  @SubscribeMessage('sendThreadComment')
+  async sendThreadComment(client: Socket, threadCommentData: sendThreadCommentRequestDto) {
+    const subComment = await this._channelService.sendThreadComment(threadCommentData);
+    this.server.emit('sendThreadCommentData', subComment);
   }
 
   @SubscribeMessage('findThreadComment')
@@ -147,7 +147,8 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   @SubscribeMessage('editUserProfileImage')
   async editUserProfileImage(client: Socket, profileImageData: registerProfileImageRequestDto) {
     const editProfileData = await this._userService.registerProfileImage(profileImageData);
-    this.server.emit('editUserProfileImageData', editProfileData);
+    console.log(editProfileData);
+    this.server.emit('registerPictureData', editProfileData);
   }
 
   @SubscribeMessage('deleteProfileImage')
@@ -165,7 +166,7 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   @SubscribeMessage('registerGenre')
   async registerGenre(client: Socket, registerData: registerGenreRequestDto) {
     const genre = await this._genreService.registerGenre(registerData);
-    this.server.emit('registerData', genre);
+    this.server.emit('registerData', genre.usersGenres);
   }
 
   afterInit(server: Server) {

@@ -1,7 +1,7 @@
 <template>
   <v-app>
-    <p v-show="getterUser.certification === false">登録完了しました。</p>
-    <p v-show="getterUser.certification === true">登録済みです。</p>
+    <p v-show="userData.certification === false">登録完了しました。</p>
+    <p v-show="userData.certification === true">登録済みです。</p>
     <nuxt-link to="/login">ログインページへ遷移</nuxt-link>
   </v-app>
 </template>
@@ -11,14 +11,9 @@ import { mapActions, mapGetters } from 'vuex'
 export default {
   name: 'CertificationPage',
   auth: false,
-  data() {
-    return {
-      userData: [],
-    }
-  },
   computed: {
     ...mapGetters({
-      getterUser: 'user/getUser',
+      userData: 'user/getUser',
     }),
   },
   mounted() {

@@ -11,9 +11,7 @@ export const state = () => ({
   participationChannelData: [],
   nonParticipationData: [],
   joinChannelData: [],
-  participationUserData: [],
   threadComment: [],
-  userLikes: [],
   userProfile: [],
   topName: '',
   bookmarkComments: [],
@@ -39,14 +37,8 @@ export const getters = {
   getNonParticipationData: state => {
     return state.nonParticipationData
   },
-  getParticipationUserData: state => {
-    return state.participationUserData
-  },
   getThreadComment: state => {
     return state.threadComment
-  },
-  getUserLikes: state => {
-    return state.userLikes
   },
   getUserProfile: state => {
     return state.userProfile
@@ -81,14 +73,8 @@ export const mutations = {
   setNonParticipationData(state, nonParticipationData) {
     state.nonParticipationData = nonParticipationData
   },
-  setParticipationUserData(state, participationUserData) {
-    state.participationUserData = participationUserData
-  },
   setThreadComment(state, threadCommentData) {
     state.threadComment = threadCommentData
-  },
-  setUserLikes(state, userLikesData) {
-    state.userLikes = userLikesData
   },
   setUserProfile(state, userProfile) {
     state.userProfile = userProfile
@@ -107,82 +93,69 @@ export const mutations = {
 export const actions = {
   sendComment({ commit }, comment) {
     socket.emit('sendComment', comment)
-    socket.on('post_message', commentData => {
-      socket.emit('request_channel_comments', comment.channelId)
+    socket.on('sendCommentData', commentData => {
+      socket.emit('getChannelComments', comment.channelId)
     })
   },
 
   async getChannelComments({ commit }, channelId) {
-    socket.emit('request_channel_comments', channelId)
-    await socket.on('channel_comments', (data) => {
-      commit('setChannelComments', data.comments)
+    socket.emit('getChannelComments', channelId)
+    await socket.on('channelCommentsData', (comments) => {
+      commit('setChannelComments', comments)
     })
   },
 
   async findGenre({ commit }, userId) {
     await socket.emit('findGenre', userId)
-    await socket.on('genreData', data => {
-      commit('setGenreData', data)
-      return data
+    await socket.on('genreData', genreData => {
+      commit('setGenreData', genreData)
+      return genreData
     })
   },
 
   findChannel({ commit }, genreId) {
     socket.emit('findChannel', genreId)
-    socket.on('channelData', data => {
-      commit('setChannelData', data.channels)
+    socket.on('channelData', channelData => {
+      commit('setChannelData', channelData)
     })
   },
 
   joinChannel({ dispatch, commit }, joinChannelData) {
     socket.emit('joinChannel', joinChannelData)
-    socket.on('joinChannelData', data => {
+    socket.on('joinChannelData', joinChannel => {
       dispatch('findChannel', joinChannelData.genreId)
     })
   },
 
   exitChannel({ dispatch, commit }, exitChannelData) {
     socket.emit('exitChannel', exitChannelData.channelId)
-    socket.on('exitChannelData', data => {
+    socket.on('exitChannelData', exitChannel => {
       dispatch('findChannel', exitChannelData.genreId)
 
     })
   },
 
-  findParticipationUser({ commit }, channelId) {
-    socket.emit('findParticipationUser', channelId)
-    socket.on('participationUserData', data => {
-      commit('setParticipationUserData', data)
-    })
-  },
-
-  bookmarkComments({ commit }, bookmarkData) {
+  toggleBookmark({ commit }, bookmarkData) {
     const bookmarkCommentData = {
       master_commentId: bookmarkData.master_commentId,
       userId: bookmarkData.userId,
       genreId: bookmarkData.genreId
     }
-    socket.emit('bookmarkComment', bookmarkCommentData)
-    socket.on('commentData', data => {
-      socket.emit('request_channel_comments', bookmarkData.channelId)
-    })
-  },
-
-  cancelBookmark({ commit }, bookmarkData) {
     const findBookmarkData = {
       genreId: bookmarkData.genreId,
       userId: bookmarkData.userId
     }
-    socket.emit('bookmarkComment', bookmarkData)
-    socket.on('commentData', data => {
+    socket.emit('toggleBookmark', bookmarkCommentData)
+    socket.on('toggleBookmarkData', bookmarkComment => {
+      socket.emit('getChannelComments', bookmarkData.channelId)
       socket.emit('findBookmarkComment', findBookmarkData)
     })
   },
 
   getBookmarkComment({ commit }, findBookmarkData) {
     socket.emit('findBookmarkComment', findBookmarkData)
-    socket.on('bookmarkCommentData', data => {
-      commit('setBookmarkComments', data.bookmarks)
+    socket.on('bookmarkCommentData', bookmarkComment => {
+      commit('setBookmarkComments', bookmarkComment)
     })
   },
 
@@ -193,37 +166,30 @@ export const actions = {
     })
   },
 
-  postThreadComment({ commit }, threadCommentData) {
-    socket.emit('postThreadComment', threadCommentData)
-    socket.on('postThreadCommentData', data => {
+  sendThreadComment({ commit }, threadCommentData) {
+    socket.emit('sendThreadComment', threadCommentData)
+    socket.on('sendThreadCommentData', threadComment => {
       socket.emit('findThreadComment', threadCommentData.master_commentId)
     })
   },
 
-  likesComments({ commit }, likesData) {
+  toggleLikes({ commit }, likesData) {
     const likesCommentData = {
       master_commentId: likesData.master_commentId,
       userId: likesData.userId,
       channelId: likesData.channelId,
     }
-    socket.emit('likesComment', likesCommentData)
-    socket.on('likesCountData', data => {
-      socket.emit('request_channel_comments', likesData.channelId)
-    })
-  },
-
-  findUserLikes({ commit }, userLikesData) {
-    socket.emit('findUserLikes', userLikesData)
-    socket.on('userLikesData', data => {
-      commit('setUserLikes', data)
+    socket.emit('toggleLike', likesCommentData)
+    socket.on('toggleLikeData', toggleLike => {
+      socket.emit('getChannelComments', likesData.channelId)
     })
   },
 
   editUserProfile({ commit }, editUserData) {
     socket.emit('editUserProfile', editUserData)
-    socket.on('editUserData', data => {
+    socket.on('editUserData', userData => {
       socket.emit('findUserProfile', editUserData.userId)
-      socket.emit('request_channel_comments', editUserData.channelId)
+      socket.emit('getChannelComments', editUserData.channelId)
     })
   },
 
@@ -236,11 +202,11 @@ export const actions = {
         key: Key
       }
       socket.emit('editUserProfileImage', profileData)
-      socket.on('editUserProfileImageData', data => {
+      socket.on('registerPictureData', data => {
         socket.emit('deleteProfileImage', editUserData.email)
         socket.on('deleteProfileImageData', deleteData => {
-          commit('setUserProfile', data.user)
-          const topName = data.user.username.slice(0, 1)
+          commit('setUserProfile', data)
+          const topName = data.username.slice(0, 1)
           commit('setTopName', topName)
 
           return deleteData
@@ -265,7 +231,7 @@ export const actions = {
         key: data.Key
       }
       socket.emit('editUserProfileImage', editUserProfileData)
-      socket.on('editUserProfileImageData', userData => {
+      socket.on('registerPictureData', userData => {
         commit('setUserProfile', userData.user)
         const topName = userData.user.username.slice(0, 1)
         commit('setTopName', topName)
@@ -276,18 +242,18 @@ export const actions = {
 
   findUserProfile({ commit }, userId) {
     socket.emit('findUserProfile', userId)
-    socket.on('userProfile', data => {
-      commit('setUserProfile', data)
-      const topName = data.username.slice(0, 1)
+    socket.on('userProfile', user => {
+      commit('setUserProfile', user)
+      const topName = user.username.slice(0, 1)
       commit('setTopName', topName)
-      return data
+      return user
     })
   },
 
   deleteComment({ commit }, deleteCommentData) {
     socket.emit('deleteComment', deleteCommentData.master_commentId)
-    socket.on('deleteCommentData', data => {
-      socket.emit('request_channel_comments', deleteCommentData.channelId)
+    socket.on('deleteCommentData', deleteComment => {
+      socket.emit('getChannelComments', deleteCommentData.channelId)
     })
   },
 
@@ -297,15 +263,15 @@ export const actions = {
       comment: editCommentData.comment
     }
     socket.emit('editComment', editComment)
-    socket.on('editCommentData', data => {
-      socket.emit('request_channel_comments', editCommentData.channelId)
+    socket.on('editCommentData', editComment => {
+      socket.emit('getChannelComments', editCommentData.channelId)
     })
   },
 
   registerGenre({ commit }, genreData) {
     socket.emit('registerGenre', genreData)
-    socket.on('registerData', data => {
-      commit('setRegisterGenreData', data.usersGenres)
+    socket.on('registerData', usersGenres => {
+      commit('setRegisterGenreData', usersGenres)
     })
   }
 

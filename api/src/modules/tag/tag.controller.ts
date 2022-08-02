@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { CommonResponse, OkResponse } from 'src/common/types/response';
-import { registerTagRequestDto } from './dto/register_tag.request.dto';
+import { registerTagRequestDto } from './dto/register-tag.request.dto';
 import { TagsResponseDto } from './dto/tags.response.dto';
 import { TagService } from './tag.service';
 

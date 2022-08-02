@@ -13,12 +13,12 @@ import { certificationUserRequestDto } from './dto/certification-user.request.dt
 import { MailerService } from '@nestjs-modules/mailer';
 import { FileUploadService } from '../file-upload/file-upload.service';
 import { S3 } from 'aws-sdk';
-import { registerProfileImageRequestDto } from './dto/registerProfileImage.request.dto';
+import { registerProfileImageRequestDto } from './dto/register-profileImage.request.dto';
 
 @Injectable()
 export class UserService implements IUserService {
   constructor(
-    private readonly mailerService: MailerService,
+    private readonly _mailerService: MailerService,
     private readonly _fileService: FileUploadService,
     @InjectRepository(User)
     private readonly _userRepository: Repository<User>,
@@ -70,16 +70,16 @@ export class UserService implements IUserService {
   }
 
   async certificationUser(userData: certificationUserRequestDto) {
-    const origin = await this._userRepository.find({
+    const userProfile = await this._userRepository.find({
       where: {
         id: userData.userId,
       },
     });
-    if (!origin) {
+    if (!userProfile) {
       throw new NotFoundException('ユーザーが見つかりません');
     }
 
-    const certificationUser = Object.assign(origin[0], {
+    const certificationUser = Object.assign(userProfile[0], {
       certification: userData.certification,
     });
     const user = await this._userRepository.save(certificationUser);
@@ -109,15 +109,15 @@ export class UserService implements IUserService {
 
   //userProfile編集処理
   async editUserProfile(editUserData: editUserDataRequestDto): Promise<UserResponseDto> {
-    const origin = await this._userRepository.find({
+    const editUser = await this._userRepository.find({
       where: {
         id: editUserData.userId,
       },
     });
-    if (!origin) {
+    if (!editUser) {
       throw new NotFoundException('ユーザーが見つかりません');
     }
-    const updateUser = Object.assign(origin[0], {
+    const updateUser = Object.assign(editUser[0], {
       username: editUserData.username,
       self_introduction: editUserData.self_introduction,
     });
@@ -143,7 +143,7 @@ export class UserService implements IUserService {
     const url =
       'http://localhost:8080/register/_' + userData.userId + '/' + hash + '?expires=' + expiration;
 
-    this.mailerService.sendMail({
+    this._mailerService.sendMail({
       to: userData.email,
       from: process.env.EMAIL_USER,
       subject: 'ユーザー本登録用URL',
@@ -151,7 +151,7 @@ export class UserService implements IUserService {
     });
   }
 
-  async registerProfileImage(
+  async  registerProfileImage(
     registerProfileImageData: registerProfileImageRequestDto,
   ): Promise<UserResponseDto> {
     const email = registerProfileImageData.email;

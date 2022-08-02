@@ -1,12 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
 
-export class deleteCommentRequestDto {
+export class toggleLikeRequestDto {
   @IsNotEmpty()
   @ApiProperty()
   master_commentId: number;
 
   @IsNotEmpty()
   @ApiProperty()
-  key: string;
+  userId: number;
+
+  @IsNotEmpty()
+  @ApiProperty()
+  channelId: number;
 }

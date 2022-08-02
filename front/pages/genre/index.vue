@@ -12,7 +12,7 @@
       </div>
       <div class="genreList">
         <v-sheet
-          v-for="(genre, index) in genreDatas"
+          v-for="(genre, index) in genreData"
           :key="index"
           v-model="checkbox"
           class="genre"
@@ -38,7 +38,7 @@ export default {
   name: 'GenrePage',
   data() {
     return {
-      genreDatas: [],
+      genreData: [],
       checkbox: false,
       genreSelect: false,
       selected: [],
@@ -53,7 +53,7 @@ export default {
     axios
       .get('http://localhost:3000/genre')
       .then((res) => {
-        this.genreDatas = res.data.data.genres
+        this.genreData = res.data.data.genres
       })
       .catch((error) => {
         console.log(error)

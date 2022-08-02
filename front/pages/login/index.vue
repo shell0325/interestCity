@@ -17,15 +17,15 @@
             <v-text-field
               v-model="password"
               label="Password"
-              :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
+              :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
               :rules="[
                 passwordRules.required,
                 passwordRules.min,
                 passwordRules.max,
               ]"
-              :type="show1 ? 'text' : 'password'"
+              :type="showPassword ? 'text' : 'password'"
               name="input-10-1"
-              @click:append="show1 = !show1"
+              @click:append="showPassword = !showPassword"
             ></v-text-field>
           </v-col>
         </v-row>
@@ -58,7 +58,7 @@ export default {
         min: (v) => v.length >= 8 || '８文字以上入力してください',
         max: (v) => v.length <= 20 || '20文字以下で入力してください',
       },
-      show1: false,
+      showPassword: false,
     }
   },
   computed: {

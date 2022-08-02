@@ -25,30 +25,30 @@
             <v-text-field
               v-model="password"
               label="Password"
-              :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
+              :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
               :rules="[
                 passwordRules.required,
                 passwordRules.min,
                 passwordRules.max,
               ]"
-              :type="show1 ? 'text' : 'password'"
+              :type="showPassword ? 'text' : 'password'"
               name="input-10-1"
-              @click:append="show1 = !show1"
+              @click:append="showPassword = !showPassword"
             ></v-text-field>
           </v-col>
           <v-col>
             <v-text-field
-              v-model="repassword"
+              v-model="rePassword"
               label="RePassword"
-              :append-icon="show2 ? 'mdi-eye' : 'mdi-eye-off'"
+              :append-icon="showRePassword ? 'mdi-eye' : 'mdi-eye-off'"
               :rules="[
                 passwordRules.required,
                 passwordRules.min,
                 passwordRules.max,
               ]"
-              :type="show2 ? 'text' : 'password'"
+              :type="showRePassword ? 'text' : 'password'"
               name="input-10-1"
-              @click:append="show2 = !show2"
+              @click:append="showRePassword = !showRePassword"
             ></v-text-field>
           </v-col>
         </v-row>
@@ -56,12 +56,12 @@
           color="primary"
           dark
           :disabled="
-            password !== repassword ||
+            password !== rePassword ||
             password === '' ||
             email === '' ||
             username === ''
           "
-          class="text-caption addChannel mr-0 px-0"
+          class="text-caption mr-0 px-0"
           @click="userRegister()"
         >
           ユーザー登録
@@ -89,7 +89,7 @@ export default {
       username: '',
       email: '',
       password: '',
-      repassword: '',
+      rePassword: '',
       valid: false,
       usernameRules: {
         required: (value) => !!value || '入力してください',
@@ -100,8 +100,8 @@ export default {
         min: (value) => value.length >= 8 || '８文字以上入力してください',
         max: (value) => value.length <= 20 || '20文字以下で入力してください',
       },
-      show1: false,
-      show2: false,
+      showPassword: false,
+      showRePassword: false,
     }
   },
   computed: {
@@ -118,6 +118,7 @@ export default {
     login() {
       this.$router.push('/login')
     },
+
     async userRegister() {
       if (this.$refs.form.validate()) {
         await axios

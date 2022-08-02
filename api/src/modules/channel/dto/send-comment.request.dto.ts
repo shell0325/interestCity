@@ -16,10 +16,9 @@ export class sendCommentRequestDto {
 
   @IsNotEmpty()
   @ApiProperty()
-  postImage: any;
+  sendImage: any;
 
   @IsNotEmpty()
   @ApiProperty()
   pictureName: string;
-
 }

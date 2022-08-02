@@ -19,11 +19,11 @@ import { editCommentRequestDto } from './dto/edit-comment.request.dto';
 import { findBookmarkRequestDto } from './dto/find-bookmark.request.dto';
 import { joinChannelRequestDto } from './dto/join-channel.request.dto';
 import { LikeResponseDto } from './dto/like.response.dto';
-import { postThreadCommentRequestDto } from './dto/post-thread-comment.dto';
-import { bookmarkCommentRequestDto } from './dto/register-bookmark-comment.request.dto';
-import { likesCommentRequestDto } from './dto/register-likes-comment.request.dto';
-import { registerPictureRequestDto } from './dto/registerPicture.request.dto';
-import { sendCommentRequestDto } from './dto/sendComment.request.dto';
+import { sendThreadCommentRequestDto } from './dto/send-thread-comment.dto';
+import { toggleBookmarkRequestDto } from './dto/toggle-bookmark.request.dto';
+import { toggleLikeRequestDto } from './dto/toggle-like.request.dto';
+import { registerPictureRequestDto } from './dto/register-picture.request.dto';
+import { sendCommentRequestDto } from './dto/send-comment.request.dto';
 import { SubCommentResponseDto } from './dto/sub-comment.response.dto';
 import { SubCommentsResponseDto } from './dto/sub-comments.response.dto';
 import { UsersChannelResponseDto } from './dto/user-channel.response.dto';
@@ -61,8 +61,8 @@ export class ChannelService {
       channelId: channel.id,
       genreId: channelData.genreId,
     };
-    const registerUsers_Channels = await this._usersChannelsRepository.save(joinChannelData);
-    return { channel: channel, users_channels: registerUsers_Channels };
+    const joinChannel = await this._usersChannelsRepository.save(joinChannelData);
+    return { channel: channel, users_channels: joinChannel };
   }
 
   async findChannel(genreId: number): Promise<ChannelsResponseDto> {
@@ -91,18 +91,21 @@ export class ChannelService {
       comment: commentData.comment,
       channelId: commentData.channelId,
       userId: commentData.userId,
-      postImage: commentData.postImage,
+      sendImage: commentData.sendImage,
       pictureName: commentData.pictureName,
     };
-    if (commentData.postImage !== '') {
+    if (commentData.sendImage !== '') {
       const comment = await this._masterCommentRepository.save(commentsData);
-      const postPicture = await this.sendPicture(commentData.postImage, commentData.pictureName);
+      const sendPictureData = await this.sendPicture(
+        commentData.sendImage,
+        commentData.pictureName,
+      );
       const registerPictureData = {
         commentId: comment.id,
-        picture: postPicture.Location,
-        key: postPicture.Key,
+        picture: sendPictureData.Location,
+        key: sendPictureData.Key,
       };
-      const registerPicture = await this.registerPicturePath(registerPictureData);
+      await this.registerPicturePath(registerPictureData);
       return { comment };
     }
     const comment = await this._masterCommentRepository.save(commentsData);
@@ -121,15 +124,15 @@ export class ChannelService {
   }
 
   async editComment(editCommentData: editCommentRequestDto): Promise<CommentResponseDto> {
-    const origin = await this._masterCommentRepository.find({
+    const editComment = await this._masterCommentRepository.find({
       where: {
         id: editCommentData.master_commentId,
       },
     });
-    if (!origin) {
+    if (!editComment) {
       throw new NotFoundException('コメントが見つかりません');
     }
-    const updateCommentData = Object.assign(origin[0], {
+    const updateCommentData = Object.assign(editComment[0], {
       comment: editCommentData.comment,
     });
     const comment = await this._masterCommentRepository.save(updateCommentData);
@@ -142,7 +145,7 @@ export class ChannelService {
       id: master_commentId,
     });
     if (comment[0].picture !== null) {
-      const deleteResult = await s3
+      await s3
         .deleteObject({
           Bucket: process.env.AWS_PUBLIC_BUCKET_NAME!,
           Key: comment[0].key,
@@ -159,44 +162,42 @@ export class ChannelService {
     return deleteComments;
   }
 
-  async likesComment(
-    likesCountData: likesCommentRequestDto,
-  ): Promise<DeleteResult | LikeResponseDto> {
-    const likesComment = await this._likesRepository.find({
+  async toggleLike(toggleLikeData: toggleLikeRequestDto): Promise<DeleteResult | LikeResponseDto> {
+    const toggleLike = await this._likesRepository.find({
       where: {
-        master_commentId: likesCountData.master_commentId,
-        userId: likesCountData.userId,
+        master_commentId: toggleLikeData.master_commentId,
+        userId: toggleLikeData.userId,
       },
     });
-    if (likesComment.length !== 0) {
+    if (toggleLike.length !== 0) {
       const deleteLikes = await this._likesRepository.delete({
-        master_commentId: likesCountData.master_commentId,
-        userId: likesCountData.userId,
+        master_commentId: toggleLikeData.master_commentId,
+        userId: toggleLikeData.userId,
       });
       return deleteLikes;
     } else {
-      const like = await this._likesRepository.save(likesCountData);
+      const like = await this._likesRepository.save(toggleLikeData);
       return { like };
     }
   }
 
-  async bookmarkComment(
-    bookmarkCommentData: bookmarkCommentRequestDto,
+  async toggleBookmark(
+    toggleBookmarkData: toggleBookmarkRequestDto,
   ): Promise<DeleteResult | BookmarkResponseDto> {
-    const bookmarkComment = await this._bookmark.find({
+    const toggleBookmark = await this._bookmark.find({
       where: {
-        master_commentId: bookmarkCommentData.master_commentId,
-        userId: bookmarkCommentData.userId,
+        master_commentId: toggleBookmarkData.master_commentId,
+        userId: toggleBookmarkData.userId,
       },
     });
-    if (bookmarkComment.length !== 0) {
+    if (toggleBookmark.length !== 0) {
       const deleteLikes = await this._bookmark.delete({
-        master_commentId: bookmarkCommentData.master_commentId,
-        userId: bookmarkCommentData.userId,
+        master_commentId: toggleBookmarkData.master_commentId,
+        userId: toggleBookmarkData.userId,
       });
       return deleteLikes;
     } else {
-      const bookmark = await this._bookmark.save(bookmarkCommentData);
+      const bookmark = await this._bookmark.save(toggleBookmarkData);
       return { bookmark };
     }
   }
@@ -214,8 +215,8 @@ export class ChannelService {
     return { bookmarks };
   }
 
-  async postThreadComment(
-    subCommentData: postThreadCommentRequestDto,
+  async sendThreadComment(
+    subCommentData: sendThreadCommentRequestDto,
   ): Promise<SubCommentResponseDto> {
     const subComment = await this._subComment.save(subCommentData);
     return { subComment };

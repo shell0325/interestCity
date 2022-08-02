@@ -125,18 +125,18 @@
         </v-btn>
       </v-navigation-drawer>
       <!-- チャンネル上のスペース -->
-      <v-card color="red" height="72" width="245" class="ml-auto genreName">
+      <v-card color="red" height="72" width="245" class="ml-auto">
         <v-card-title
           v-if="!selectGenreIndex"
           width="50px"
-          class="text-h6 text--primary justify-center genreName"
+          class="text-h6 text--primary justify-center"
         >
           ジャンル名
         </v-card-title>
         <v-card-title
           v-else-if="genreData.length !== 0"
           width="50px"
-          class="text-h6 text--primary justify-center genreName"
+          class="text-h6 text--primary justify-center"
         >
           {{ genreData[selectGenreNum].genre.name }}
         </v-card-title>
@@ -167,7 +167,6 @@
               @click="
                 getChannelComment(channel.id)
                 selectChannel(channel.id, index)
-                findParticipationUsers(channel.id)
               "
               >{{ channel.name }}</v-list-item-title
             >
@@ -249,22 +248,22 @@
           rows="3"
           class="textarea"
         ></v-textarea>
-        <div class="commentPost">
+        <div class="sendComments">
           <v-btn
-            class="commentPostBtn mt-1"
+            class="sendCommentsBtn mt-1"
             fab
             dark
             small
             color="black"
             :disabled="userId === 1"
-            @click="postThreadComments()"
+            @click="sendThreadComments()"
           >
             <v-icon>mdi-send</v-icon>
           </v-btn>
         </div>
       </v-footer>
     </v-navigation-drawer>
-    <v-main v-show="showComment" class="main">
+    <v-main class="main">
       <v-overlay
         opacity="0.9"
         :value="overlay"
@@ -283,12 +282,12 @@
             prepend-icon="mdi-camera"
             :disabled="userId === 1"
             label="Avatar"
-            @change="select_file"
+            @change="selectProfileImage"
           ></v-file-input>
           <v-col cols="12" sm="13">
             <v-text-field
               v-model="editUsername"
-              :rules="rules"
+              :rules="usernameRules"
               counter
               maxlength="20"
               label="ユーザーネーム"
@@ -345,7 +344,7 @@
                   bookmarkComments.master_comment.id,
                   index
                 ),
-                  cancelBookmarks()
+                  toggleBookmarks()
               "
               ><v-icon>mdi-star</v-icon></v-btn
             >
@@ -379,7 +378,7 @@
                             bookmarkComments.master_comment.id,
                             index
                           ),
-                            editComment()
+                            openEditComment()
                         "
                         >コメントを編集する</v-btn
                       >
@@ -483,7 +482,7 @@
               color="yellow"
               :disabled="userId === 1"
               @click="
-                selectCommentMouseover(comments.id, index), bookmarkComment()
+                selectCommentMouseover(comments.id, index), toggleBookmarks()
               "
               ><v-icon>mdi-star</v-icon></v-btn
             >
@@ -496,7 +495,7 @@
               small
               :disabled="userId === 1"
               @click="
-                selectCommentMouseover(comments.id, index), bookmarkComment()
+                selectCommentMouseover(comments.id, index), toggleBookmarks()
               "
               ><v-icon>mdi-star</v-icon></v-btn
             >
@@ -535,7 +534,7 @@
                         class="px-0"
                         @click="
                           selectCommentMouseover(comments.id, index),
-                            editComment()
+                            openEditComment()
                         "
                         >コメントを編集する</v-btn
                       >
@@ -565,7 +564,7 @@
             >
               <v-textarea
                 v-show="editComments && selectCommentIndex === comments.id"
-                v-model="editCommentData"
+                v-model="editCommentText"
                 background-color="grey lighten-1"
                 dense
                 flat
@@ -576,16 +575,16 @@
                 class="textarea"
               >
               </v-textarea>
-              <v-list-item-action class="commentPost">
+              <v-list-item-action class="sendComments">
                 <v-btn
-                  class="commentPostBtn mt-1 mx-1 white--text"
+                  class="sendCommentsBtn mt-1 mx-1 white--text"
                   color="blue-grey"
                   @click="saveEditComment()"
                 >
                   保存する
                 </v-btn>
                 <v-btn
-                  class="commentPostBtn mt-1"
+                  class="sendCommentsBtn mt-1"
                   plain
                   @click=";(editComments = false), (comment = '')"
                 >
@@ -643,7 +642,7 @@
             :disabled="userId === 1"
             @click="
               selectCommentMouseover(comments.id, index),
-                likesComment(),
+                toggleLike(),
                 getChannelComment(selectChannelIndex)
             "
           >
@@ -656,12 +655,12 @@
             "
             icon
             small
-            class="ml-5"
+            class="ml-11"
             color="red"
             :disabled="userId === 1"
             @click="
               selectCommentMouseover(comments.id, index)
-              likesComment()
+              toggleLike()
               getChannelComment(selectChannelIndex)
             "
           >
@@ -681,7 +680,7 @@
         placeholder="写真を選択してください"
         prepend-icon="mdi-camera"
         label="picture"
-        @change="selectSendFile"
+        @change="selectSendImage"
       ></v-file-input>
       <v-textarea
         v-model="comment"
@@ -695,9 +694,9 @@
         class="textarea"
       >
       </v-textarea>
-      <div class="commentPost">
+      <div class="sendComments">
         <v-btn
-          class="commentPostBtn mt-1"
+          class="sendCommentsBtn mt-1"
           fab
           dark
           small
@@ -705,7 +704,7 @@
             !selectGenreIndex || !selectChannelIndex || userId === 1 || !comment
           "
           color="black"
-          @click="postComment()"
+          @click="sendComments()"
         >
           <v-icon>mdi-send</v-icon>
         </v-btn>
@@ -726,7 +725,7 @@ export default {
       self_introduction: '',
       drawer: false,
       comment: '',
-      editCommentData: '',
+      editCommentText: '',
       selectGenreIndex: '',
       selectChannelIndex: '',
       selectCommentIndex: '',
@@ -739,11 +738,10 @@ export default {
         { item_list: '新しいチャンネルを作成する' },
         { item_list: 'チャンネル一覧を確認する' },
       ],
-      showComment: true,
       threadComment: '',
       selectedChannel: '',
       overlay: false,
-      rules: [(v) => v.length <= 20 || 'Max 20 characters'],
+      usernameRules: [(v) => v.length <= 20 || 'Max 20 characters'],
       editUsername: '',
       editSelfIntroduction: '',
       editProfileImagePath: '',
@@ -774,7 +772,7 @@ export default {
       genreData: 'channel/getGenreData',
       channelData: 'channel/getChannelData',
       channelCommentsData: 'channel/getChannelComments',
-      participationUserData: 'channel/getParticipationUserData',
+      // participationUserData: 'channel/getParticipationUserData',
       threadCommentData: 'channel/getThreadComment',
       userProfile: 'channel/getUserProfile',
       topName: 'channel/getTopName',
@@ -797,29 +795,26 @@ export default {
       findGenre: 'channel/findGenre',
       findChannel: 'channel/findChannel',
       getChannelComments: 'channel/getChannelComments',
-      findJoinChannels: 'channel/findJoinChannels',
-      findParticipationUser: 'channel/findParticipationUser',
-      bookmarkComments: 'channel/bookmarkComments',
+      toggleBookmark: 'channel/toggleBookmark',
       getBookmarkComment: 'channel/getBookmarkComment',
       findThreadComment: 'channel/findThreadComment',
-      postThreadComment: 'channel/postThreadComment',
-      likesComments: 'channel/likesComments',
+      sendThreadComment: 'channel/sendThreadComment',
+      toggleLikes: 'channel/toggleLikes',
       editUserProfile: 'channel/editUserProfile',
       findUserProfile: 'channel/findUserProfile',
       deleteComment: 'channel/deleteComment',
-      cancelBookmark: 'channel/cancelBookmark',
-      saveComment: 'channel/editComment',
+      editComment: 'channel/editComment',
       editUserProfileImage: 'channel/editUserProfileImage',
     }),
 
-    async postComment() {
+    async sendComments() {
       this.commentPicture = false
       const commentData = {
         comment: this.comment,
         userId: this.$auth.user.id,
         channelId: this.channelData[this.selectChannelNum].id,
-        postImage: this.sendPictureData,
-        pictureName:this.sendPictureData.name
+        sendImage: this.sendPictureData,
+        pictureName: this.sendPictureData.name,
       }
       await this.sendComment(commentData)
       this.$nextTick(() => {
@@ -888,23 +883,14 @@ export default {
       })
     },
 
-    async findParticipationUsers(channelId) {
-      const participationUser = await this.findParticipationUser(channelId)
-      return participationUser
-    },
-
-    show() {
-      this.showComment = !this.showComment
-    },
-
-    bookmarkComment() {
+    toggleBookmarks() {
       const bookmarkCommentData = {
         master_commentId: this.selectCommentIndex,
         userId: this.userId,
         genreId: this.selectGenreIndex,
         channelId: this.selectChannelIndex,
       }
-      this.bookmarkComments(bookmarkCommentData)
+      this.toggleBookmark(bookmarkCommentData)
     },
 
     async getBookmarkComments() {
@@ -914,8 +900,8 @@ export default {
         genreId: this.selectGenreIndex,
         userId: this.userId,
       }
-      const bookmarkComment = await this.getBookmarkComment(findBookmarkData)
-      return bookmarkComment
+      const toggleBookmark = await this.getBookmarkComment(findBookmarkData)
+      return toggleBookmark
     },
 
     openThread() {
@@ -933,34 +919,34 @@ export default {
       return threadComment
     },
 
-    async postThreadComments() {
-      const postThreadCommentData = {
+    async sendThreadComments() {
+      const sendThreadCommentData = {
         comment: this.threadComment,
         userId: this.userId,
         master_commentId: this.selectMasterCommentNum,
       }
-      if (postThreadCommentData.comment !== '') {
-        const postThreadComment = await this.postThreadComment(
-          postThreadCommentData
+      if (sendThreadCommentData.comment !== '') {
+        const sendThreadComment = await this.sendThreadComment(
+          sendThreadCommentData
         )
-        return postThreadComment
+        return sendThreadComment
       }
     },
 
-    likesComment() {
+    toggleLike() {
       const likesCommentData = {
         master_commentId: this.selectCommentIndex,
         userId: this.userId,
         channelId: this.selectChannelIndex,
       }
-      this.likesComments(likesCommentData)
+      this.toggleLikes(likesCommentData)
     },
 
-    select_file(file) {
+    selectProfileImage(file) {
       this.editProfileImagePath = file
     },
 
-    selectSendFile(file) {
+    selectSendImage(file) {
       this.sendPictureData = file
     },
 
@@ -1003,29 +989,20 @@ export default {
       this.deleteComment(deleteCommentData)
     },
 
-    editComment() {
+    openEditComment() {
       this.editComments = true
-      this.editCommentData =
+      this.editCommentText =
         this.channelCommentsData[this.selectCommentNum].comment
     },
 
     saveEditComment() {
-      const editComment = {
+      const editCommentData = {
         master_commentId: this.selectCommentIndex,
-        comment: this.editCommentData,
+        comment: this.editCommentText,
         channelId: this.selectChannelIndex,
       }
-      this.saveComment(editComment)
+      this.editComment(editCommentData)
       this.editComments = false
-    },
-
-    cancelBookmarks() {
-      const cancelBookmarkData = {
-        master_commentId: this.selectCommentIndex,
-        userId: this.userId,
-        genreId: this.selectGenreIndex,
-      }
-      this.cancelBookmark(cancelBookmarkData)
     },
 
     registerGenre() {
@@ -1038,25 +1015,10 @@ export default {
 </script>
 
 <style>
-.createChannel {
-  justify-content: center;
-  white-space: normal;
-}
 .addChannel {
   white-space: normal;
   display: block;
   width: -webkit-fill-available;
-}
-.genreName {
-  width: inherit;
-}
-.registerChannel {
-  width: 100px;
-  white-space: normal;
-  display: block;
-}
-.genreName {
-  display: flex;
 }
 .comment {
   color: white;
@@ -1066,9 +1028,6 @@ export default {
 .selectGenre.isSelect {
   border: black 2px solid;
   box-sizing: content-box;
-}
-.channelTag {
-  text-align: center;
 }
 .selectChannel.isSelect {
   background-color: red;
@@ -1086,23 +1045,14 @@ export default {
   max-width: fit-content;
   margin-right: 20px;
 }
-.bookmark {
-  color: yellow;
-}
 .closeThread {
   float: right;
-}
-.threadTextField {
-  display: flex;
 }
 .v-text-field__details {
   display: none;
 }
 .threadComment {
   padding: 0;
-}
-.comment {
-  white-space: pre-line;
 }
 .v-text-field.v-text-field--enclosed {
   margin: auto;
@@ -1114,12 +1064,6 @@ export default {
 .footer {
   padding: 0;
   display: block;
-}
-.v-text-field.v-text-field--enclosed:not(.v-text-field--rounded)
-  > .v-input__control
-  > .v-input__slot,
-.v-text-field.v-text-field--enclosed .v-text-field__details {
-  margin-bottom: 0;
 }
 .v-card__text {
   padding: 0;
@@ -1140,9 +1084,6 @@ export default {
 .v-list--dense .v-list-item .v-list-item__title,
 .v-list--dense .v-list-item .v-list-item__subtitle {
   line-height: inherit;
-}
-.userIcon {
-  display: contents;
 }
 .closeBtn {
   float: right;
@@ -1168,14 +1109,11 @@ export default {
 .editComment {
   min-height: auto;
 }
-.likesBtn {
-  color: red;
-}
-.commentPost {
+.sendComments {
   width: 95%;
   margin: auto;
 }
-.commentPostBtn {
+.sendCommentsBtn {
   float: right;
 }
 .v-application--is-ltr .v-list-item__action:last-of-type:not(:only-child) {

@@ -1,7 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
 
-export class registerRequestDto {
+export class toggleBookmarkRequestDto {
+  @IsNotEmpty()
+  @ApiProperty()
+  master_commentId: number;
+
   @IsNotEmpty()
   @ApiProperty()
   userId: number;

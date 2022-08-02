@@ -41,7 +41,7 @@ export class GenreService implements IGenreService {
   }
 
   async registerGenre(registerData: registerGenreRequestDto): Promise<UsersGenresResponseDto> {
-    const genreDelete = await this._users_genresRepository.delete({
+    await this._users_genresRepository.delete({
       userId: registerData.userId,
     });
     const genreData = await this._users_genresRepository.find({

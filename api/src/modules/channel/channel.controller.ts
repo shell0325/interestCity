@@ -9,10 +9,10 @@ export class ChannelController {
   constructor(private readonly _channelService: ChannelService) {}
 
   @Post()
-  async createChannel(@Body() channel: createChannelRequestDto): Promise<CreatedResponse> {
-    let responseData: ChannelResponseDto;
+  async createChannel(@Body() channelData: createChannelRequestDto): Promise<CreatedResponse> {
+    let channel: ChannelResponseDto;
 
-    responseData = await this._channelService.createChannel(channel);
-    return new CreatedResponse(responseData);
+    channel = await this._channelService.createChannel(channelData);
+    return new CreatedResponse(channel);
   }
 }

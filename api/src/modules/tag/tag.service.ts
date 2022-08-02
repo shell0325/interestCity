@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Channels_Tags } from 'src/database/entities/channels_tags.entity';
 import { Tag } from 'src/database/entities/tags.entity';
 import { Repository } from 'typeorm';
-import { registerTagRequestDto } from './dto/register_tag.request.dto';
+import { registerTagRequestDto } from './dto/register-tag.request.dto';
 import { TagsResponseDto } from './dto/tags.response.dto';
 import { ITagService } from './interface/tag-service.interface';
 

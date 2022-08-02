@@ -2,7 +2,7 @@
   <v-app id="inspire">
     <v-app-bar app clipped-right flat height="72">
       <v-spacer>チャンネル一覧</v-spacer>
-      <v-btn @click="Channel()"><v-icon>mdi-home</v-icon></v-btn>
+      <v-btn @click="pageTransition()"><v-icon>mdi-home</v-icon></v-btn>
     </v-app-bar>
     <v-main>
       <v-col class=" pb-0 px-6">
@@ -283,7 +283,7 @@ export default {
       this.selectNonParticipationIndex = ''
       this.selectNonParticipationNum = ''
     },
-    Channel() {
+    pageTransition() {
       this.$router.push({
         path: '/channel',
       })

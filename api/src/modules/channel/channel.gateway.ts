@@ -11,8 +11,6 @@ import {
 import { Server, Socket } from 'socket.io';
 import { registerGenreRequestDto } from '../genre/dto/register-genre.request.dto';
 import { GenreService } from '../genre/genre.service';
-import { editUserDataRequestDto } from '../user/dto/edit-user-data.request.dto';
-import { registerProfileImageRequestDto } from '../user/dto/register-profileImage.request.dto';
 import { UserService } from '../user/user.service';
 import { ChannelService } from './channel.service';
 import { editCommentRequestDto } from './dto/edit-comment.request.dto';
@@ -133,21 +131,8 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   }
 
   @SubscribeMessage('editUserProfile')
-  async editUserProfile(client: Socket, editUserData: editUserDataRequestDto) {
-    const findUser = await this._userService.editUserProfile(editUserData);
-    this.server.emit('editUserData', findUser);
-  }
-
-  @SubscribeMessage('registerProfileImage')
-  async registerProfileImage(client: Socket, file: any) {
-    const registerProfileImage = await this._userService.addAvatar(file[0], file[1]);
-    this.server.emit('registerProfileImageData', registerProfileImage);
-  }
-
-  @SubscribeMessage('editUserProfileImage')
-  async editUserProfileImage(client: Socket, profileImageData: registerProfileImageRequestDto) {
-    const editProfileData = await this._userService.registerProfileImage(profileImageData);
-    console.log(editProfileData);
+  async editUserProfile(client: Socket, profileImageData: any) {
+    const editProfileData = await this._userService.editUser(profileImageData);
     this.server.emit('registerPictureData', editProfileData);
   }
 
@@ -158,7 +143,7 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   }
 
   @SubscribeMessage('findUserProfile')
-  async findUserProfile(client: Socket, userId: number) {
+  async findUser(client: Socket, userId: number) {
     const userProfile = await this._userService.findUserProfile(userId);
     this.server.emit('userProfile', userProfile.user);
   }

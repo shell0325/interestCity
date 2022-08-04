@@ -317,7 +317,6 @@
               :disabled="userId === 1"
               @click="
                 editProfileImage()
-                editUser()
                 overlay = false
               "
             >
@@ -772,7 +771,6 @@ export default {
       genreData: 'channel/getGenreData',
       channelData: 'channel/getChannelData',
       channelCommentsData: 'channel/getChannelComments',
-      // participationUserData: 'channel/getParticipationUserData',
       threadCommentData: 'channel/getThreadComment',
       userProfile: 'channel/getUserProfile',
       topName: 'channel/getTopName',
@@ -800,11 +798,10 @@ export default {
       findThreadComment: 'channel/findThreadComment',
       sendThreadComment: 'channel/sendThreadComment',
       toggleLikes: 'channel/toggleLikes',
-      editUserProfile: 'channel/editUserProfile',
       findUserProfile: 'channel/findUserProfile',
       deleteComment: 'channel/deleteComment',
       editComment: 'channel/editComment',
-      editUserProfileImage: 'channel/editUserProfileImage',
+      editUserProfile: 'channel/editUserProfile',
     }),
 
     async sendComments() {
@@ -950,30 +947,22 @@ export default {
       this.sendPictureData = file
     },
 
-    async editUser() {
-      const editUserData = {
-        userId: this.userId,
-        username: this.editUsername,
-        self_introduction: this.editSelfIntroduction,
-        channelId: this.selectChannelIndex,
-      }
-      await this.editUserProfile(editUserData)
-      this.editUsername = ''
-      this.editSelfIntroduction = ''
-    },
-
     editProfileImage() {
       this.profilePicture = false
       const editData = {
         userId: this.$auth.user.id,
+        username: this.editUsername,
+        self_introduction: this.editSelfIntroduction,
         email: this.$auth.user.email,
         filePath: this.editProfileImagePath,
+        channelId: this.selectChannelIndex,
         select: this.selected,
       }
-      this.editUserProfileImage(editData)
+      this.editUserProfile(editData)
       this.$nextTick(() => {
         this.profilePicture = true
       })
+      this.editProfileImagePath = ''
     },
 
     async findUser(userId) {

@@ -13,7 +13,7 @@ import { certificationUserRequestDto } from './dto/certification-user.request.dt
 import { MailerService } from '@nestjs-modules/mailer';
 import { FileUploadService } from '../file-upload/file-upload.service';
 import { S3 } from 'aws-sdk';
-import { registerProfileImageRequestDto } from './dto/register-profileImage.request.dto';
+import { editUserProfileRequestDto } from './dto/edit-user-profile.request.dto';
 
 @Injectable()
 export class UserService implements IUserService {
@@ -151,16 +151,43 @@ export class UserService implements IUserService {
     });
   }
 
-  async  registerProfileImage(
-    registerProfileImageData: registerProfileImageRequestDto,
-  ): Promise<UserResponseDto> {
+  async editUser(registerProfileImageData: editUserProfileRequestDto): Promise<UserResponseDto> {
+    console.log(typeof registerProfileImageData.profileImagePath);
     const email = registerProfileImageData.email;
-    const profileImagePath = registerProfileImageData.profileImagePath;
-    const key = registerProfileImageData.key;
-    const userData = await this._userRepository.findOne({ where: { email } });
-    if (!userData) throw new NotFoundException();
+    const editUserData = {
+      userId: registerProfileImageData.userId,
+      username: registerProfileImageData.username,
+      self_introduction: registerProfileImageData.self_introduction,
+    };
+    const userData = await this._userRepository.find({ where: { email } });
+    if (
+      registerProfileImageData.profileImagePath !== '' &&
+      registerProfileImageData.fileName !== ''
+    ) {
+      const ImagePath = registerProfileImageData.profileImagePath;
+      const fileName = registerProfileImageData.fileName;
+      if (userData[0].profileImagePath !== '') {
+        await this.deleteProfileImage(email);
+      }
+      const addAvatar = await this.addAvatar(ImagePath, fileName);
+      const profileImagePath = addAvatar.Location;
+      const key = addAvatar.Key;
+      await this.editUserProfile(editUserData);
+      const userProfile = await this._userRepository.find({ where: { email } });
+      const user = await this._userRepository.save({
+        ...userProfile[0],
+        profileImagePath,
+        key,
+      });
+      return { user };
+    }
+    await this.deleteProfileImage(email);
+    const profileImagePath = '';
+    const key = '';
+    await this.editUserProfile(editUserData);
+    const userProfile = await this._userRepository.find({ where: { email } });
     const user = await this._userRepository.save({
-      ...userData,
+      ...userProfile[0],
       profileImagePath,
       key,
     });
@@ -171,9 +198,8 @@ export class UserService implements IUserService {
     const s3 = new S3();
     const userData = await this._userRepository.find({ where: { email } });
     if (userData[0].key === null) {
-      return email;
-    }
-    if (userData[0].key !== '' && userData[0].key !== null) {
+      return userData;
+    } else if (userData[0].key !== '' && userData[0].key !== null) {
       const deleteResult = await s3
         .deleteObject({
           Bucket: process.env.AWS_PUBLIC_BUCKET_NAME!,

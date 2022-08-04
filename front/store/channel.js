@@ -186,57 +186,20 @@ export const actions = {
   },
 
   editUserProfile({ commit }, editUserData) {
-    socket.emit('editUserProfile', editUserData)
-    socket.on('editUserData', userData => {
-      socket.emit('findUserProfile', editUserData.userId)
-      socket.emit('getChannelComments', editUserData.channelId)
-    })
-  },
-
-  editUserProfileImage({ commit }, editUserData) {
-    if (editUserData.filePath === '' && editUserData.select === false) {
-      const Key = ''
-      const profileData = {
-        email: editUserData.email,
-        profileImagePath: editUserData.filePath,
-        key: Key
-      }
-      socket.emit('editUserProfileImage', profileData)
-      socket.on('registerPictureData', data => {
-        socket.emit('deleteProfileImage', editUserData.email)
-        socket.on('deleteProfileImageData', deleteData => {
-          commit('setUserProfile', data)
-          const topName = data.username.slice(0, 1)
-          commit('setTopName', topName)
-
-          return deleteData
-        })
-      })
-      return editUserData
+    const profileImageData = {
+      userId: editUserData.userId,
+      email: editUserData.email,
+      username: editUserData.username,
+      channelId: editUserData.channelId,
+      self_introduction: editUserData.self_introduction,
+      profileImagePath: editUserData.filePath,
+      fileName: editUserData.filePath.name
     }
-    else if (editUserData.select === true) {
-      return editUserData
-    }
-    socket.emit('registerProfileImage', editUserData.filePath, editUserData.filePath.name)
-    socket.on('registerProfileImageData', data => {
-      if (data.Key !== '') {
-        socket.emit('deleteProfileImage', editUserData.email)
-        socket.on('deleteProfileImageData', deleteData => {
-          return deleteData
-        })
-      }
-      const editUserProfileData = {
-        email: editUserData.email,
-        profileImagePath: data.Location,
-        key: data.Key
-      }
-      socket.emit('editUserProfileImage', editUserProfileData)
-      socket.on('registerPictureData', userData => {
-        commit('setUserProfile', userData.user)
-        const topName = userData.user.username.slice(0, 1)
-        commit('setTopName', topName)
-
-      })
+    socket.emit('editUserProfile', profileImageData)
+    socket.on('registerPictureData', userData => {
+      commit('setUserProfile', userData.user)
+      const topName = userData.user.username.slice(0, 1)
+      commit('setTopName', topName)
     })
   },
 

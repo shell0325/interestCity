@@ -4,7 +4,7 @@ import { IsNotEmpty } from 'class-validator';
 export class registerTagRequestDto {
   @IsNotEmpty()
   @ApiProperty()
-  name: [];
+  name: string[];
 
   @IsNotEmpty()
   @ApiProperty()

@@ -28,9 +28,10 @@ import { SubCommentResponseDto } from './dto/sub-comment.response.dto';
 import { SubCommentsResponseDto } from './dto/sub-comments.response.dto';
 import { UsersChannelResponseDto } from './dto/user-channel.response.dto';
 import { S3 } from 'aws-sdk';
+import { IChannelService } from './interface/channel-service.interface';
 
 @Injectable()
-export class ChannelService {
+export class ChannelService implements IChannelService {
   constructor(
     private readonly _fileService: FileUploadService,
     @InjectRepository(Channel)
@@ -139,7 +140,7 @@ export class ChannelService {
     return { comment };
   }
 
-  async deleteComment(master_commentId: number) {
+  async deleteComment(master_commentId: number): Promise<DeleteResult> {
     const s3 = new S3();
     const comment = await this._masterCommentRepository.find({
       id: master_commentId,
@@ -232,23 +233,23 @@ export class ChannelService {
     return { subComment };
   }
 
-  async sendPicture(imageBuffer: Buffer, filename: string) {
+  async sendPicture(imageBuffer: Buffer, filename: string): Promise<S3.ManagedUpload.SendData> {
     const picture = await this._fileService.uploadPublicFile(imageBuffer, filename);
     return picture;
   }
 
-  async registerPicturePath(pictureData: registerPictureRequestDto) {
+  async registerPicturePath(pictureData: registerPictureRequestDto): Promise<CommentResponseDto> {
     const picture = pictureData.picture;
     const key = pictureData.key;
-    const comment = await this._masterCommentRepository.findOne({
+    const master_comment = await this._masterCommentRepository.find({
       where: { id: pictureData.commentId },
     });
-    if (!comment) throw new NotFoundException();
-    const master_comment = await this._masterCommentRepository.save({
-      ...comment,
-      picture,
-      key,
+    if (!master_comment) throw new NotFoundException();
+    const registerComment = Object.assign(master_comment[0], {
+      picture: picture,
+      key: key,
     });
-    return master_comment;
+    const comment = await this._masterCommentRepository.save(registerComment);
+    return { comment };
   }
 }

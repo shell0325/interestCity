@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Channels_Tags } from 'src/database/entities/channels_tags.entity';
 import { Tag } from 'src/database/entities/tags.entity';
 import { Repository } from 'typeorm';
+import { ChannelTagsResponseDto } from './dto/channel_tags.response.dto';
 import { registerTagRequestDto } from './dto/register-tag.request.dto';
 import { TagsResponseDto } from './dto/tags.response.dto';
 import { ITagService } from './interface/tag-service.interface';
@@ -22,29 +23,31 @@ export class TagService implements ITagService {
     return { tags };
   }
 
-  async registerTag(tagData: registerTagRequestDto): Promise<void> {
-    tagData.name.forEach(async (element) => {
-      const tags = await this._tagRepository.findOne({
+  async registerTag(tagData: registerTagRequestDto): Promise<ChannelTagsResponseDto> {
+    const channel_tags: Channels_Tags[] = [];
+    for (const tagName of tagData.name) {
+      const tags = await this._tagRepository.find({
         where: {
-          name: element,
+          name: tagName,
         },
       });
-      if (!tags) {
-        const tag = await this._tagRepository.save({ name: element });
+      if (tags.length === 0) {
+        const registerTag = await this._tagRepository.save({ name: tagName });
         const channel_tag = await this._channels_tagsRepository.save({
-          tagId: tag.id,
+          tagId: registerTag.id,
           channelId: tagData.channelId,
           genreId: tagData.genreId,
         });
-        return { tag: tag, channel_tag: channel_tag };
-      } else if (tags) {
+        channel_tags.push(channel_tag);
+      } else if (tags.length !== 0) {
         const channel_tag = await this._channels_tagsRepository.save({
-          tagId: tags.id,
+          tagId: tags[0].id,
           channelId: tagData.channelId,
           genreId: tagData.genreId,
         });
-        return channel_tag;
+        channel_tags.push(channel_tag);
       }
-    });
+    }
+    return { channel_tags };
   }
 }

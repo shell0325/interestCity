@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { v4 as uuid } from 'uuid';
 import { S3 } from 'aws-sdk';
+import { IFileUploadService } from './interface/file-upload-service.interface';
 
 const s3 = new S3();
 
 @Injectable()
-export class FileUploadService {
-  async uploadPublicFile(dataBuffer: Buffer, filename: string) {
+export class FileUploadService implements IFileUploadService {
+  async uploadPublicFile(dataBuffer: Buffer, filename: string): Promise<S3.ManagedUpload.SendData> {
     const uploadResult = await s3
       .upload({
         Bucket: process.env.AWS_PUBLIC_BUCKET_NAME!,

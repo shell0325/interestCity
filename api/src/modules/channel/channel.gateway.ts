@@ -70,12 +70,6 @@ export class ChannelGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     this.server.emit('sendPictureData', sendPicture);
   }
 
-  @SubscribeMessage('registerCommentPicture')
-  async registerCommentPicture(client: Socket, pictureData: registerPictureRequestDto) {
-    const editProfileData = await this._channelService.registerPicturePath(pictureData);
-    this.server.emit('registerPictureData', editProfileData);
-  }
-
   @SubscribeMessage('getChannelComments')
   async requestChannelComments(socket: Socket, channelId: number) {
     const comments = await this._channelService.getChannelComments(channelId);

@@ -12,8 +12,9 @@ import { sendEmailRequestDto } from './dto/send-email.request.dto';
 import { certificationUserRequestDto } from './dto/certification-user.request.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 import { FileUploadService } from '../file-upload/file-upload.service';
-import { S3 } from 'aws-sdk';
+import { AWSError, S3 } from 'aws-sdk';
 import { editUserProfileRequestDto } from './dto/edit-user-profile.request.dto';
+import { PromiseResult } from 'aws-sdk/lib/request';
 
 @Injectable()
 export class UserService implements IUserService {
@@ -69,7 +70,7 @@ export class UserService implements IUserService {
     return { user };
   }
 
-  async certificationUser(userData: certificationUserRequestDto) {
+  async certificationUser(userData: certificationUserRequestDto): Promise<UserResponseDto> {
     const userProfile = await this._userRepository.find({
       where: {
         id: userData.userId,
@@ -133,7 +134,7 @@ export class UserService implements IUserService {
   }
 
   //メール送信処理
-  async sendEmail(userData: sendEmailRequestDto): Promise<void> {
+  async sendEmail(userData: sendEmailRequestDto): Promise<String> {
     const now = new Date();
     const expiration = await now.setHours(now.getHours() + 1);
 
@@ -149,6 +150,7 @@ export class UserService implements IUserService {
       subject: 'ユーザー本登録用URL',
       html: '<b>以下のURLをクリックして本登録を完了させてください。\n\n</b>' + url,
     });
+    return url;
   }
 
   async editUser(registerProfileImageData: editUserProfileRequestDto): Promise<UserResponseDto> {
@@ -194,24 +196,26 @@ export class UserService implements IUserService {
     return { user };
   }
 
-  async deleteProfileImage(email: string) {
+  async deleteProfileImage(
+    email: string,
+  ): Promise<UsersResponseDto | PromiseResult<S3.DeleteObjectOutput, AWSError>> {
     const s3 = new S3();
-    const userData = await this._userRepository.find({ where: { email } });
-    if (userData[0].key === null) {
-      return userData;
-    } else if (userData[0].key !== '' && userData[0].key !== null) {
+    const users = await this._userRepository.find({ where: { email } });
+    if (users[0].key === null) {
+      return { users };
+    } else if (users[0].key !== '' && users[0].key !== null) {
       const deleteResult = await s3
         .deleteObject({
           Bucket: process.env.AWS_PUBLIC_BUCKET_NAME!,
-          Key: userData[0].key,
+          Key: users[0].key,
         })
         .promise();
       return deleteResult;
     }
-    return userData;
+    return { users };
   }
 
-  async addAvatar(imageBuffer: Buffer, filename: string) {
+  async addAvatar(imageBuffer: Buffer, filename: string): Promise<S3.ManagedUpload.SendData> {
     const avatar = await this._fileService.uploadPublicFile(imageBuffer, filename);
     return avatar;
   }

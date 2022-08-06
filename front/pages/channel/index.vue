@@ -337,7 +337,7 @@
               icon
               small
               color="yellow"
-              :disabled="userId === 1"
+              :disabled="userId === 1 || detectionBookmark === false"
               @click="
                 selectCommentMouseover(
                   bookmarkComments.master_comment.id,
@@ -428,7 +428,7 @@
                   v-if="!bookmarkComments.user.profileImagePath"
                   class="d-block mr-3"
                   color="blue"
-                  size="30"
+                  size="40"
                   rounded
                 >
                   <span class="white--text headline">{{ topName }}</span>
@@ -436,7 +436,7 @@
                 <v-avatar
                   v-else-if="bookmarkComments.user.profileImagePath"
                   class="d-block mr-3"
-                  size="30"
+                  size="40"
                   rounded
                 >
                   <img :src="`${bookmarkComments.user.profileImagePath}`" />
@@ -479,7 +479,7 @@
               icon
               small
               color="yellow"
-              :disabled="userId === 1"
+              :disabled="userId === 1 || detectionBookmark === false"
               @click="
                 selectCommentMouseover(comments.id, index), toggleBookmarks()
               "
@@ -492,7 +492,7 @@
               "
               icon
               small
-              :disabled="userId === 1"
+              :disabled="userId === 1 || detectionBookmark === false"
               @click="
                 selectCommentMouseover(comments.id, index), toggleBookmarks()
               "
@@ -599,7 +599,7 @@
                   v-if="!comments.user.profileImagePath"
                   class="d-block mr-3"
                   color="blue"
-                  size="30"
+                  size="40"
                   rounded
                 >
                   <span class="white--text headline">{{ topName }}</span>
@@ -607,7 +607,7 @@
                 <v-avatar
                   v-else-if="comments.user.profileImagePath"
                   class="d-block mr-3"
-                  size="30"
+                  size="40"
                   rounded
                 >
                   <img :src="`${comments.user.profileImagePath}`" />
@@ -630,41 +630,44 @@
               ></v-img>
             </v-list-item-content>
           </v-list-item>
-          <v-btn
-            v-show="
-              !comments.likes.some((u) => u.userId === userId) &&
-              (!editComments || selectCommentIndex !== comments.id)
-            "
-            icon
-            small
-            class="ml-11"
-            :disabled="userId === 1"
-            @click="
-              selectCommentMouseover(comments.id, index),
-                toggleLike(),
+          <v-list-item>
+            <v-btn
+              v-show="
+                !comments.likes.some((u) => u.userId === userId) &&
+                (!editComments || selectCommentIndex !== comments.id)
+              "
+              icon
+              small
+              class="ml-11"
+              :disabled="userId === 1 || detectionLike === false"
+              @click="
+                selectCommentMouseover(comments.id, index),
+                  toggleLike(),
+                  getChannelComment(selectChannelIndex)
+              "
+            >
+              <v-icon>mdi-heart</v-icon>
+            </v-btn>
+            <v-btn
+              v-show="
+                comments.likes.some((u) => u.userId === userId) &&
+                (!editComments || selectCommentIndex !== comments.id)
+              "
+              icon
+              small
+              class="ml-11"
+              color="red"
+              :disabled="userId === 1 || detectionLike === false"
+              @click="
+                selectCommentMouseover(comments.id, index)
+                toggleLike()
                 getChannelComment(selectChannelIndex)
-            "
-          >
-            <v-icon>mdi-heart</v-icon>
-          </v-btn>
-          <v-btn
-            v-show="
-              comments.likes.some((u) => u.userId === userId) &&
-              (!editComments || selectCommentIndex !== comments.id)
-            "
-            icon
-            small
-            class="ml-11"
-            color="red"
-            :disabled="userId === 1"
-            @click="
-              selectCommentMouseover(comments.id, index)
-              toggleLike()
-              getChannelComment(selectChannelIndex)
-            "
-          >
-            <v-icon>mdi-heart</v-icon>
-          </v-btn>
+              "
+            >
+              <v-icon>mdi-heart</v-icon>
+            </v-btn>
+            <v-list-item-title>{{ comments.likes.length }}</v-list-item-title>
+          </v-list-item>
         </v-list>
       </v-card>
       <!--チャンネルのコメントを表示する部分-->
@@ -764,6 +767,8 @@ export default {
       selected: false,
       commentPicture: true,
       profilePicture: true,
+      detectionLike: true,
+      detectionBookmark: true,
     }
   },
   computed: {
@@ -880,7 +885,12 @@ export default {
       })
     },
 
+    changeDetectionBookmark() {
+      this.detectionBookmark = true
+    },
+
     toggleBookmarks() {
+      this.detectionBookmark = false
       const bookmarkCommentData = {
         master_commentId: this.selectCommentIndex,
         userId: this.userId,
@@ -888,6 +898,7 @@ export default {
         channelId: this.selectChannelIndex,
       }
       this.toggleBookmark(bookmarkCommentData)
+      setTimeout(this.changeDetectionBookmark, 300)
     },
 
     async getBookmarkComments() {
@@ -930,13 +941,19 @@ export default {
       }
     },
 
+    changeDetectionLike() {
+      this.detectionLike = true
+    },
+
     toggleLike() {
+      this.detectionLike = false
       const likesCommentData = {
         master_commentId: this.selectCommentIndex,
         userId: this.userId,
         channelId: this.selectChannelIndex,
       }
       this.toggleLikes(likesCommentData)
+      setTimeout(this.changeDetectionLike, 300)
     },
 
     selectProfileImage(file) {

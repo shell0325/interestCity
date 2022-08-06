@@ -154,7 +154,6 @@ export class UserService implements IUserService {
   }
 
   async editUser(registerProfileImageData: editUserProfileRequestDto): Promise<UserResponseDto> {
-    console.log(typeof registerProfileImageData.profileImagePath);
     const email = registerProfileImageData.email;
     const editUserData = {
       userId: registerProfileImageData.userId,

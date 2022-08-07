@@ -148,7 +148,14 @@ export class UserService implements IUserService {
       to: userData.email,
       from: process.env.EMAIL_USER,
       subject: 'ユーザー本登録用URL',
-      html: '<b>以下のURLをクリックして本登録を完了させてください。\n\n</b>' + url,
+      html:
+        '<p>以下のURLをクリックして本登録を完了させてください。</p>' +
+        url +
+        '<p>ご注意</p>' +
+        '<p>・有効期限はメールが送信されてから1時間です。</p>' +
+        '<p>・有効期限が切れた場合は再度ユーザー登録をしてください。</p>' +
+        '<p></p>' +
+        '<p>※本メールは送信専用です。このままご返信いただいてもお答えできませんのでご了承ください。</p>',
     });
     return url;
   }

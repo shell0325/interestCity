@@ -142,7 +142,7 @@ export class UserService implements IUserService {
 
     const hash = emailHash.replace('/', '');
     const url =
-      'http://localhost:8080/register/_' + userData.userId + '/' + hash + '?expires=' + expiration;
+      `http://${process.env.HOST!}:${process.env.PORT!}/register/_` + userData.userId + '/' + hash + '?expires=' + expiration;
 
     this._mailerService.sendMail({
       to: userData.email,

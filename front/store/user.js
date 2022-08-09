@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client'
 
-const socket = io('http://localhost:3000/user')
+const socket = io(`http://${process.env.HOST}:${process.env.API_PORT}/user`)
 
 
 export const state = () => ({
@@ -25,7 +25,7 @@ export const mutations = {
 export const actions = {
   async postUser({ commit }, userData) {
     if (userData.password === userData.repassword) {
-      await this.$axios.$post('http://localhost:3000/user', {
+      await this.$axios.$post(`http://${process.env.HOST}:${process.env.API_PORT}/user`, {
         username: userData.username,
         email: userData.email,
         password: userData.password,
@@ -36,7 +36,7 @@ export const actions = {
   },
 
   async certificationUser({ commit }, userData) {
-    await this.$axios.$post('http://localhost:3000/user/certification', {
+    await this.$axios.$post(`http://${process.env.HOST}:${process.env.API_PORT}/user/certification`, {
       userId: userData.userId,
       certification: userData.certification
     })

@@ -122,7 +122,7 @@ export default {
     async userRegister() {
       if (this.$refs.form.validate()) {
         await axios
-          .post('http://localhost:3000/user', {
+          .post(`http://${process.env.HOST}:${process.env.API_PORT}/user`, {
             username: this.username,
             email: this.email,
             password: this.password,

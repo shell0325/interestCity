@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client'
 
-const socket = io('http://localhost:3000/chat')
+const socket = io(`http://${process.env.HOST}:${process.env.API_PORT}/chat`)
 
 export const state = () => ({
   comment: '',

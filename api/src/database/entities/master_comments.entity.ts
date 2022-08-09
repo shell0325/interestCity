@@ -27,6 +27,9 @@ export class Master_Comment {
   @Column('varchar', { name: 'key', length: 255, nullable: true })
   key: string;
 
+  @Column('varchar', { name: 'time', length: 255 })
+  time: string;
+
   @Column('tinyint', { name: 'user_id' })
   userId: number;
   @ManyToOne(() => User, {

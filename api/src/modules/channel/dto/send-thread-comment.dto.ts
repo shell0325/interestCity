@@ -13,8 +13,4 @@ export class sendThreadCommentRequestDto {
   @IsNotEmpty()
   @ApiProperty()
   master_commentId: number;
-
-  @IsNotEmpty()
-  @ApiProperty()
-  bookmark: boolean;
 }

@@ -18,6 +18,9 @@ export class Sub_Comment {
   @Column('text', { name: 'comment' })
   comment: Text[];
 
+  @Column('varchar', { name: 'time', length: 255 })
+  time: string;
+
   @Column('tinyint', { name: 'user_id' })
   userId: number;
   @ManyToOne(() => User, {

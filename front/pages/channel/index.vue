@@ -217,7 +217,7 @@
           </v-btn>
         </v-toolbar>
         <v-card>
-          <v-list-item-title v-if="channelCommentsData.length !== 0">{{
+          <v-list-item-title v-if="channelCommentsData.length !== 0" class="ml-5">{{
             channelCommentsData[selectCommentNum].comment
           }}</v-list-item-title>
         </v-card>
@@ -225,12 +225,29 @@
           <v-list-item>
             <v-list-item-content>
               <v-list-item>
+                <v-avatar
+                  v-if="!thread.user.profileImagePath"
+                  class="d-block mr-3"
+                  color="blue"
+                  size="30"
+                  rounded
+                >
+                  <span class="white--text headline">{{ topName }}</span>
+                </v-avatar>
+                <v-avatar
+                  v-else-if="thread.user.profileImagePath"
+                  class="d-block mr-3"
+                  size="30"
+                  rounded
+                >
+                  <img :src="`${thread.user.profileImagePath}`" />
+                </v-avatar>
                 <v-list-item-title class="commentUsername">{{
                   thread.user.username
                 }}</v-list-item-title>
-                <v-list-item-title>{{ thread.createdAt }}</v-list-item-title>
+                <v-list-item-title>{{ thread.time }}</v-list-item-title>
               </v-list-item>
-              <v-list-item-title>{{ thread.comment }}</v-list-item-title>
+              <v-list-item-title class="ml-14">{{ thread.comment }}</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
         </v-card>
@@ -426,7 +443,7 @@
               <v-list-item class="pl-0">
                 <v-avatar
                   v-if="!bookmarkComments.user.profileImagePath"
-                  class="d-block mr-3"
+                  class="d-block mr-3 mt-7"
                   color="blue"
                   size="40"
                   rounded
@@ -435,7 +452,7 @@
                 </v-avatar>
                 <v-avatar
                   v-else-if="bookmarkComments.user.profileImagePath"
-                  class="d-block mr-3"
+                  class="d-block mr-3 mt-7"
                   size="40"
                   rounded
                 >
@@ -446,10 +463,10 @@
                   bookmarkComments.user.username
                 }}</v-list-item-title>
                 <v-list-item-title>{{
-                  bookmarkComments.master_comment.createdAt
+                  bookmarkComments.master_comment.time
                 }}</v-list-item-title>
               </v-list-item>
-              <v-card-text>{{
+              <v-card-text class="ml-14">{{
                 bookmarkComments.master_comment.comment
               }}</v-card-text>
               <v-img
@@ -615,9 +632,9 @@
                 <v-list-item-title class="commentUsername">{{
                   comments.user.username
                 }}</v-list-item-title>
-                <v-list-item-title>{{ comments.createdAt }}</v-list-item-title>
+                <v-list-item-title>{{ comments.time }}</v-list-item-title>
               </v-list-item>
-              <v-card-text class="commentText">{{
+              <v-card-text class="commentText ml-13">{{
                 comments.comment
               }}</v-card-text>
               <v-img
@@ -937,6 +954,7 @@ export default {
         const sendThreadComment = await this.sendThreadComment(
           sendThreadCommentData
         )
+        this.threadComment = 'f'
         return sendThreadComment
       }
     },
@@ -1133,6 +1151,6 @@ export default {
 .commentText {
   font-size: large;
   width: 97%;
-  margin-left: auto;
+  /* margin-left: auto; */
 }
 </style>

@@ -88,12 +88,20 @@ export class ChannelService implements IChannelService {
   }
 
   async sendComment(commentData: sendCommentRequestDto): Promise<CommentResponseDto> {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1;
+    const day = today.getDate();
+    const hour = today.getHours() + 9;
+    const minute = today.getMinutes();
+    const postTime = `${year}年${month}月${day}日${hour}時${minute}分`;
     const commentsData = {
       comment: commentData.comment,
       channelId: commentData.channelId,
       userId: commentData.userId,
       sendImage: commentData.sendImage,
       pictureName: commentData.pictureName,
+      time: postTime,
     };
     if (commentData.sendImage !== '') {
       const comment = await this._masterCommentRepository.save(commentsData);
@@ -219,7 +227,21 @@ export class ChannelService implements IChannelService {
   async sendThreadComment(
     subCommentData: sendThreadCommentRequestDto,
   ): Promise<SubCommentResponseDto> {
-    const subComment = await this._subComment.save(subCommentData);
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1;
+    const day = today.getDate();
+    const hour = today.getHours();
+    const minute = today.getMinutes();
+    const postTime = `${year}年${month}月${day}日${hour}時${minute}分`;
+    const subCommentsData = {
+      comment: subCommentData.comment,
+      userId: subCommentData.userId,
+      master_commentId: subCommentData.master_commentId,
+      time: postTime,
+    };
+
+    const subComment = await this._subComment.save(subCommentsData);
     return { subComment };
   }
 

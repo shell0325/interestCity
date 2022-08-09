@@ -61,7 +61,7 @@ export default {
       }
       if (this.channelName) {
         const channel = await axios.post(
-          'http://localhost:3000/channel',
+          `http://${process.env.HOST}:${process.env.API_PORT}/channel`,
           createChannelData
         )
         if (channel.data.data.channel) {

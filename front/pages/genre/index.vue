@@ -51,7 +51,7 @@ export default {
   },
   mounted() {
     axios
-      .get('http://localhost:3000/genre')
+      .get(`http://${process.env.HOST}:${process.env.API_PORT}/genre`)
       .then((res) => {
         this.genreData = res.data.data.genres
       })

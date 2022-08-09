@@ -62,7 +62,7 @@ export default {
         alert('タグを３つ以上追加してください')
       }
       const tag = await axios
-        .post('http://localhost:3000/tag', tagList)
+        .post(`http://${process.env.HOST}:${process.env.API_PORT}/tag`, tagList)
         .then(() => {
           this.$router.push({
             path: '/channel',

@@ -47,7 +47,7 @@ export default {
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
-    baseURL: 'http://localhost:3000',
+    baseURL: `http://${process.env.HOST}:${process.env.API_PORT}`,
   },
 
   // PWA module configuration: https://go.nuxtjs.dev/pwa
@@ -85,7 +85,7 @@ export default {
 
   proxy: {
     '/api': {
-      target: 'http://localhost',
+      target: `http://localhost`,
       pathRewrite: {
         '^/api': '/'
       }

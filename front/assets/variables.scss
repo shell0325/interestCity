@@ -1,4 +1,32 @@
-// Ref: https://github.com/nuxt-community/vuetify-module#customvariables
-//
-// The variables you want to modify
-// $font-size-root: 20px;
+$mq-breakpoints-min: (
+ 'xxs': '0px',
+ 'xs': '441px',
+ 'sm': '581px',
+ 'md': '781px',
+ 'lg': '961px',
+) !default;
+
+$mq-breakpoints-max: (
+ 'xxs': '440px',
+ 'xs': '599px',
+ 'sm': '780px',
+ 'md': '960px',
+ 'lg': '1024px',
+) !default;
+
+$breakpoint-tablet: 955px;
+$breakpoint-mobile: 665px;
+
+/* mq-target:指定してメディアクエリのみに適用 */
+@mixin mq-target($breakpoint: md) {
+ @media screen and (min-width: #{map-get($mq-breakpoints-min, $breakpoint)}) and (max-width: #{map-get($mq-breakpoints-max, $breakpoint)}) {
+   @content;
+ }
+}
+
+/* mq:指定より小さい画面に適用 */
+@mixin mq($breakpoint: md) {
+ @media screen and (max-width: #{map-get($mq-breakpoints-max, $breakpoint)}) {
+   @content;
+ }
+}

@@ -89,12 +89,11 @@ export class ChannelService implements IChannelService {
 
   async sendComment(commentData: sendCommentRequestDto): Promise<CommentResponseDto> {
     const today = new Date();
-    const year = today.getFullYear();
     const month = today.getMonth() + 1;
     const day = today.getDate();
     const hour = today.getHours() + 9;
     const minute = today.getMinutes();
-    const postTime = `${year}年${month}月${day}日${hour}時${minute}分`;
+    const postTime = `${month}月${day}日${hour}時${minute}分`;
     const commentsData = {
       comment: commentData.comment,
       channelId: commentData.channelId,
@@ -228,12 +227,9 @@ export class ChannelService implements IChannelService {
     subCommentData: sendThreadCommentRequestDto,
   ): Promise<SubCommentResponseDto> {
     const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth() + 1;
-    const day = today.getDate();
     const hour = today.getHours();
     const minute = today.getMinutes();
-    const postTime = `${year}年${month}月${day}日${hour}時${minute}分`;
+    const postTime = `${hour}時${minute}分`;
     const subCommentsData = {
       comment: subCommentData.comment,
       userId: subCommentData.userId,

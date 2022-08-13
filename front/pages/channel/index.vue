@@ -1,7 +1,10 @@
 <template>
-  <v-app id="inspire">
+  <v-app>
     <!-- タイトル入力画面 -->
     <v-app-bar app clipped-right flat height="72">
+      <v-icon class="leftDrawer" @click="genreDrawer = !genreDrawer"
+        >mdi-view-headline</v-icon
+      >
       <v-spacer v-if="!selectChannelIndex">チャンネルタイトル</v-spacer>
       <v-spacer v-else-if="channelData.length !== 0">{{
         channelData[selectChannelNum].name
@@ -89,8 +92,30 @@
       </v-menu>
     </v-app-bar>
     <!-- チャンネル一覧を表示させるサイドバーについて -->
-    <v-navigation-drawer app width="300">
-      <v-navigation-drawer absolute color="grey lighten-3" width="70">
+    <v-navigation-drawer
+      v-if="
+        !($vuetify.breakpoint.sm && drawer === true) ||
+        (!$vuetify.breakpoint.xs && drawer === false)
+      "
+      v-model="genreDrawer"
+      app
+      width="300"
+      class="drawer"
+      stateless
+    >
+      <v-navigation-drawer
+        v-if="
+          !($vuetify.breakpoint.sm && drawer === true) ||
+          (!$vuetify.breakpoint.xs && drawer === false)
+        "
+        v-model="genreDrawer"
+        absolute
+        color="grey lighten-3"
+        width="70"
+        mini-variant
+        clipped
+        stateless
+      >
         <!-- ジャンルアイコンのスペース -->
         <v-divider class="mx-3 my-5"></v-divider>
         <!-- ジャンルのアイコンや文字を入力する部分 -->
@@ -203,10 +228,10 @@
     <v-navigation-drawer
       v-model="drawer"
       app
-      width="400"
       clipped
       right
       stateless
+      class="thread"
     >
       <v-list class="threadComment">
         <v-toolbar>
@@ -217,9 +242,13 @@
           </v-btn>
         </v-toolbar>
         <v-card>
-          <v-list-item-title v-if="channelCommentsData.length !== 0" class="ml-5">{{
-            channelCommentsData[selectCommentNum].comment
-          }}</v-list-item-title>
+          <v-list-item-title
+            v-if="channelCommentsData.length !== 0"
+            class="ml-5"
+            >{{
+              channelCommentsData[selectCommentNum].comment
+            }}</v-list-item-title
+          >
         </v-card>
         <v-card v-for="(thread, index) in threadCommentData" :key="index">
           <v-list-item>
@@ -245,9 +274,13 @@
                 <v-list-item-title class="commentUsername">{{
                   thread.user.username
                 }}</v-list-item-title>
-                <v-list-item-title>{{ thread.time }}</v-list-item-title>
+                <v-list-item-title class="threadTime">{{
+                  thread.time
+                }}</v-list-item-title>
               </v-list-item>
-              <v-list-item-title class="ml-14">{{ thread.comment }}</v-list-item-title>
+              <v-list-item-title class="ml-14">{{
+                thread.comment
+              }}</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
         </v-card>
@@ -287,7 +320,7 @@
         class="overlay justify-center"
         :absolute="absolute"
       >
-        <v-card width="700" class="editUser">
+        <v-card class="editUser">
           <v-btn icon small class="closeBtn" @click="overlay = false">
             <v-icon> mdi-window-close </v-icon>
           </v-btn>
@@ -786,6 +819,7 @@ export default {
       profilePicture: true,
       detectionLike: true,
       detectionBookmark: true,
+      genreDrawer: true,
     }
   },
   computed: {
@@ -954,7 +988,7 @@ export default {
         const sendThreadComment = await this.sendThreadComment(
           sendThreadCommentData
         )
-        this.threadComment = 'f'
+        this.threadComment = ''
         return sendThreadComment
       }
     },
@@ -1038,7 +1072,7 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss" scoped>
 .addChannel {
   white-space: normal;
   display: block;
@@ -1064,6 +1098,7 @@ export default {
   position: absolute;
   right: 0;
   z-index: 2;
+  background-color: transparent;
 }
 .commentUsername {
   max-width: fit-content;
@@ -1151,6 +1186,20 @@ export default {
 .commentText {
   font-size: large;
   width: 97%;
-  /* margin-left: auto; */
+}
+.leftDrawer {
+  display: none;
+  @include mq(xs) {
+    display: inline;
+  }
+}
+.thread{
+  width: 300px;
+  @include mq(sm){
+    width: 250px;
+  }
+}
+.editUser {
+  width: -webkit-fill-available;
 }
 </style>

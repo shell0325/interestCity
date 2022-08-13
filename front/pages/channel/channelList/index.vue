@@ -5,7 +5,7 @@
       <v-btn @click="pageTransition()"><v-icon>mdi-home</v-icon></v-btn>
     </v-app-bar>
     <v-main>
-      <v-col class=" pb-0 px-6">
+      <v-col class="pb-0 px-6">
         <v-text-field
           v-model="channelName"
           label="チャンネル名"
@@ -15,7 +15,7 @@
           @keydown.enter="searchChannel"
         ></v-text-field>
       </v-col>
-      <v-container v-show="!searchChannelName" class=" pb-4 px-6" fluid>
+      <v-container v-show="!searchChannelName" class="pb-4 px-6" fluid>
         <v-row>
           <v-col cols="12">
             <v-card>

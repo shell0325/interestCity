@@ -39,9 +39,20 @@
                     @mouseleave="ParticipationChannelMouseleave()"
                   >
                     <v-list-item-content>
-                      <v-list-item-title> {{ channel.name }}</v-list-item-title>
+                      <div class="listItem">
+                        <v-list-item class="channelName">
+                          {{ channel.name }}</v-list-item
+                        >
+                        <v-list-item class="tag">tag:</v-list-item>
+                        <v-list-item
+                          v-for="tag in channel.tag"
+                          :key="tag.id"
+                          class="tagName"
+                          >{{ tag.tagName }}</v-list-item
+                        >
+                      </div>
                       <v-list-item-subtitle>
-                        {{ channel.explanation }}
+                        チャンネル説明: {{ channel.explanation }}
                       </v-list-item-subtitle>
                     </v-list-item-content>
                     <v-btn
@@ -84,9 +95,20 @@
                     @mouseleave="NonParticipationChannelMouseleave()"
                   >
                     <v-list-item-content>
-                      <v-list-item-title> {{ channel.name }}</v-list-item-title>
+                      <div class="listItem">
+                        <v-list-item class="channelName">
+                          {{ channel.name }}</v-list-item
+                        >
+                        <v-list-item class="tag">tag:</v-list-item>
+                        <v-list-item
+                          v-for="tag in channel.tag"
+                          :key="tag.id"
+                          class="tagName"
+                          >{{ tag.tagName }}</v-list-item
+                        >
+                      </div>
                       <v-list-item-subtitle>
-                        {{ channel.explanation }}
+                        チャンネル説明: {{ channel.explanation }}
                       </v-list-item-subtitle>
                     </v-list-item-content>
                     <v-btn
@@ -133,9 +155,20 @@
                     @mouseleave="ParticipationChannelMouseleave()"
                   >
                     <v-list-item-content>
-                      <v-list-item-title> {{ channel.name }}</v-list-item-title>
+                      <div class="listItem">
+                        <v-list-item class="channelName">
+                          {{ channel.name }}</v-list-item
+                        >
+                        <v-list-item class="tag">tag:</v-list-item>
+                        <v-list-item
+                          v-for="tag in channel.tag"
+                          :key="tag.id"
+                          class="tagName"
+                          >{{ tag.tagName }}</v-list-item
+                        >
+                      </div>
                       <v-list-item-subtitle>
-                        {{ channel.explanation }}
+                        チャンネル説明: {{ channel.explanation }}
                       </v-list-item-subtitle>
                     </v-list-item-content>
                     <v-btn
@@ -180,9 +213,20 @@
                     @mouseleave="NonParticipationChannelMouseleave()"
                   >
                     <v-list-item-content>
-                      <v-list-item-title> {{ channel.name }}</v-list-item-title>
+                      <div class="listItem">
+                        <v-list-item class="channelName">
+                          {{ channel.name }}</v-list-item
+                        >
+                        <v-list-item class="tag">tag:</v-list-item>
+                        <v-list-item
+                          v-for="tag in channel.tag"
+                          :key="tag.id"
+                          class="tagName"
+                          >{{ tag.tagName }}</v-list-item
+                        >
+                      </div>
                       <v-list-item-subtitle>
-                        {{ channel.explanation }}
+                        チャンネル説明: {{ channel.explanation }}
                       </v-list-item-subtitle>
                     </v-list-item-content>
                     <v-btn
@@ -302,3 +346,21 @@ export default {
   },
 }
 </script>
+
+<style>
+.listItem {
+  display: flex;
+  flex: initial;
+}
+.tagName {
+  padding: 0;
+  margin-left: 10px;
+}
+.tag {
+  padding: 0;
+  margin-left: 30px;
+}
+.channelName {
+  padding: 0;
+}
+</style>

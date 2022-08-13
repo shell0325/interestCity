@@ -24,6 +24,9 @@ export class Channels_Tags {
   @JoinColumn({ name: 'tag_id' })
   tag: Tag;
 
+  @Column('varchar', { name: 'tag_name' })
+  tagName: string;
+
   @Column('tinyint', { name: 'channel_id' })
   channelId: number;
   @ManyToOne(() => Channel, {

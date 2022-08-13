@@ -79,10 +79,9 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .container {
   flex-wrap: wrap;
-  width: 1000px;
   text-align: center;
 }
 
@@ -101,16 +100,26 @@ export default {
 }
 
 .genre {
-  width: 250px;
   height: 150px;
   border: 1px white solid;
   text-align: center;
   line-height: 50px;
   margin: 10px;
+  width: calc(25% - 22px);
+  @include mq(xs) {
+    width: calc(30% - 22px);
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+  }
 }
 
 .genreList {
-  display: inline-flex;
-  flex-wrap: inherit;
+  flex-wrap: wrap;
+  display: flex;
+  @include mq(xs) {
+    width: inherit;
+    display: inline-block;
+  }
 }
 </style>

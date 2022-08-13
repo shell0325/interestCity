@@ -35,6 +35,7 @@ export class TagService implements ITagService {
         const registerTag = await this._tagRepository.save({ name: tagName });
         const channel_tag = await this._channels_tagsRepository.save({
           tagId: registerTag.id,
+          tagName: registerTag.name,
           channelId: tagData.channelId,
           genreId: tagData.genreId,
         });
@@ -42,6 +43,7 @@ export class TagService implements ITagService {
       } else if (tags.length !== 0) {
         const channel_tag = await this._channels_tagsRepository.save({
           tagId: tags[0].id,
+          tagName: tags[0].name,
           channelId: tagData.channelId,
           genreId: tagData.genreId,
         });

@@ -25,16 +25,22 @@ export class UserService implements IUserService {
     private readonly _userRepository: Repository<User>,
   ) {}
 
-  //user全件取得処理
+  /**
+   *全ユーザーのデータを取得する
+   * @returns 全ユーザーデータ
+   */
   async getUsers(): Promise<UsersResponseDto> {
     const users = await this._userRepository.find();
     if (!users) throw new NotFoundException();
     return { users };
   }
 
-  //user作成処理
+  /**
+   *ユーザーを作成する
+   * @param userData 作成するユーザーデータ
+   * @returns 作成したユーザーデータ
+   */
   async createUser(userData: createUserRequestDto): Promise<{ user: string } | UserResponseDto> {
-    //emailが使用可能かどうか確認
     const findUser = await this._userRepository.find({ where: { email: userData.email } });
     if (findUser.length !== 0) {
       if (findUser[0].certification === false) {
@@ -49,9 +55,7 @@ export class UserService implements IUserService {
       }
       return { user: 'このメールアドレスは使用されています' };
     }
-    //passwordをハッシュ化
     userData.password = this.getPasswordHash(userData.password);
-    //新規ユーザーの保存
     const user = await this._userRepository.save(userData);
     const registerUser = {
       userId: user.id,
@@ -62,6 +66,11 @@ export class UserService implements IUserService {
     return { user: '会員登録メールを送信しました' };
   }
 
+  /**
+   *本登録済みのユーザーを取得する
+   * @param email メールアドレス
+   * @returns 登録済みの全ユーザーデータ
+   */
   async getCertificationUser(email: string): Promise<UserResponseDto> {
     const user = await this._userRepository.findOne({
       where: { email: email, certification: true },
@@ -70,6 +79,11 @@ export class UserService implements IUserService {
     return { user };
   }
 
+  /**
+   *ユーザーを本登録する
+   * @param userData 本登録するユーザーデータ
+   * @returns 本登録後のユーザーデータ
+   */
   async certificationUser(userData: certificationUserRequestDto): Promise<UserResponseDto> {
     const userProfile = await this._userRepository.find({
       where: {
@@ -87,28 +101,44 @@ export class UserService implements IUserService {
     return { user };
   }
 
+  /**
+   *本登録済みのユーザーを検索する
+   * @param userId ユーザーID
+   * @returns 本登録済みのユーザーデータ
+   */
   async findCertificationUser(id: number): Promise<UsersResponseDto> {
     const users = await this._userRepository.find({ where: { id: id } });
     if (!users) throw new NotFoundException();
     return { users };
   }
 
-  //user取得処理
+  /**
+   *ユーザーを検索する
+   * @param email メールアドレス
+   * @returns メールアドレスで検索したユーザーデータ
+   */
   async findUser(email: string): Promise<UserResponseDto> {
-    //emailを使用してユーザーを特定
     const user = await this._userRepository.findOne({ where: { email: email } });
     if (!user) throw new NotFoundException();
     return { user };
   }
 
-  //passwordハッシュ化処理
+  /**
+   *ハスワードをハッシュ化する
+   * @param password パスワード
+   * @returns ハッシュ後のパスワード
+   */
   getPasswordHash(password: string): string {
     const saltRounds: number = 10;
     const salt: string = bcrypt.genSaltSync(saltRounds);
     return bcrypt.hashSync(password, salt);
   }
 
-  //userProfile編集処理
+  /**
+   *ユーザーのプロフィール写真を編集する
+   * @param editUserData 編集するユーザーのデータ
+   * @returns 編集後のユーザーデータ
+   */
   async editUserProfile(editUserData: editUserDataRequestDto): Promise<UserResponseDto> {
     const editUser = await this._userRepository.find({
       where: {
@@ -126,14 +156,22 @@ export class UserService implements IUserService {
     return { user };
   }
 
-  //userProfile取得処理
+  /**
+   *ユーザーを検索する
+   * @param id ユーザーID
+   * @returns ユーザーIDで検索したユーザーデータ
+   */
   async findUserProfile(id: number): Promise<UserResponseDto> {
     const user = await this._userRepository.findOne({ where: { id } });
     if (!user) throw new NotFoundException();
     return { user };
   }
 
-  //メール送信処理
+  /**
+   *本登録用のメールを送信する
+   * @param userData 本登録メールを送信するユーザーのデータ
+   * @returns 送信した本登録用のURL
+   */
   async sendEmail(userData: sendEmailRequestDto): Promise<String> {
     const now = new Date();
     const expiration = await now.setHours(now.getHours() + 1);
@@ -165,6 +203,11 @@ export class UserService implements IUserService {
     return url;
   }
 
+  /**
+   *ユーザーデータを編集する
+   * @param registerProfileImageData 編集するユーザーのデータ
+   * @returns 編集後のユーザーデータ
+   */
   async editUser(registerProfileImageData: editUserProfileRequestDto): Promise<UserResponseDto> {
     const email = registerProfileImageData.email;
     const editUserData = {
@@ -207,6 +250,11 @@ export class UserService implements IUserService {
     return { user };
   }
 
+  /**
+   *登録済みのユーザープロフィール写真を削除する
+   * @param email メールアドレス
+   * @returns プロフィール写真の削除データ
+   */
   async deleteProfileImage(
     email: string,
   ): Promise<UsersResponseDto | PromiseResult<S3.DeleteObjectOutput, AWSError>> {
@@ -226,6 +274,12 @@ export class UserService implements IUserService {
     return { users };
   }
 
+  /**
+   *ファイルをアップロードする
+   * @param imageBuffer アップロードするファイルのバッファーデータ
+   * @param filename アップロードするファイルの名前
+   * @returns アップロード後のファイルデータ
+   */
   async addAvatar(imageBuffer: Buffer, filename: string): Promise<S3.ManagedUpload.SendData> {
     const avatar = await this._fileService.uploadPublicFile(imageBuffer, filename);
     return avatar;

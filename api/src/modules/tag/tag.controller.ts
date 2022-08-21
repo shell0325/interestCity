@@ -8,6 +8,10 @@ import { TagService } from './tag.service';
 export class TagController {
   constructor(private readonly _tagService: TagService) {}
 
+  /**
+   *全タグデータを取得する
+   * @returns 全タグデータ
+   */
   @Get()
   async getTag(): Promise<CommonResponse> {
     let tagsData: TagsResponseDto;
@@ -17,6 +21,11 @@ export class TagController {
     return new OkResponse(tagsData);
   }
 
+  /**
+   *タグを登録する
+   * @param tagData 登録するタグのデータ
+   * @returns 登録したタグデータ
+   */
   @Post()
   async registerTag(@Body() tagData: registerTagRequestDto) {
     const registerTag = await this._tagService.registerTag(tagData);

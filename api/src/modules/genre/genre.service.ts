@@ -19,11 +19,20 @@ export class GenreService implements IGenreService {
     private readonly _users_genresRepository: Repository<Users_Genres>,
   ) {}
 
+  /**
+   *全ジャンルデータを取得する
+   * @returns 全ジャンルデータ
+   */
   async getGenre(): Promise<GenresResponseDto> {
     const genres = await this._genreRepository.find();
     return { genres };
   }
 
+  /**
+   *ユーザーが登録中のジャンルデータを取得する
+   * @param userId ユーザーID
+   * @returns ユーザーが登録中のジャンルデータ
+   */
   async findGenre(userId: number): Promise<UsersGenresResponseDto> {
     const usersGenres = await this._users_genresRepository.find({
       where: {
@@ -35,11 +44,21 @@ export class GenreService implements IGenreService {
     return { usersGenres };
   }
 
+  /**
+   *ジャンルを作成する
+   * @param genreData ジャンル名
+   * @returns 作成したジャンル
+   */
   async createGenre(genreData: createGenreRequestDto): Promise<GenreResponseDto> {
     const genre = await this._genreRepository.save(genreData);
     return { genre };
   }
 
+  /**
+   *ジャンルを登録する
+   * @param registerData ジャンル登録用のデータ
+   * @returns 登録したジャンルデータ
+   */
   async registerGenre(registerData: registerGenreRequestDto): Promise<UsersGenresResponseDto> {
     await this._users_genresRepository.delete({
       userId: registerData.userId,

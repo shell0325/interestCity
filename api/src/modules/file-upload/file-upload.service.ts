@@ -7,6 +7,12 @@ const s3 = new S3();
 
 @Injectable()
 export class FileUploadService implements IFileUploadService {
+  /**
+   *ファイルをS3にアップロードする
+   * @param dataBuffer アップロードするファイルのバッファーデータ
+   * @param filename アップロードするファイルの名前
+   * @returns アップロードしたファイルのデータ
+   */
   async uploadPublicFile(dataBuffer: Buffer, filename: string): Promise<S3.ManagedUpload.SendData> {
     const uploadResult = await s3
       .upload({

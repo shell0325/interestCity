@@ -11,24 +11,29 @@ type PasswordOmitUser = Omit<User, 'password'>;
 export class AuthController {
   constructor(private readonly _authService: AuthService) {}
 
-  // passport-local戦略を付与する
+  /**
+   * passport-local戦略を付与する
+   * @param user パスワード以外のユーザーデータ
+   * @returns ログイン
+   */
   @UseGuards(LocalAuthGuard)
   @Post('/login')
-  async login(@Body(ValidationPipe) createUser: PasswordOmitUser): Promise<{
+  async login(@Body(ValidationPipe) user: PasswordOmitUser): Promise<{
     access_token: string;
     user: PasswordOmitUser;
   }> {
-    return this._authService.login(createUser);
+    return this._authService.login(user);
   }
 
   /**
-   * @description JWT認証を用いたサンプルAPI
+   * JWT認証
+   * @param req パスワード以外のユーザーデータ
+   * @returns 認証成功したユーザーデータ
    */
   @UseGuards(JwtAuthGuard) // passport-jwt戦略を付与する
   @Get('/profile')
   async getProfile(@Request() req: { user: PasswordOmitUser }): Promise<PasswordOmitUser> {
     const token = await this._authService.getToken(req.user);
-    // 認証に成功したユーザーの情報を返す
     return req.user;
   }
 }

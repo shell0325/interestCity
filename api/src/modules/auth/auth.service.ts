@@ -26,6 +26,12 @@ export class AuthService implements IAuthService {
     private readonly _userService: UserService,
   ) {}
 
+  /**
+   *パスワードをハッシュしたユーザーを作成
+   * @param email メールアドレス
+   * @param password パスワード
+   * @returns パスワードハッシュ後のユーザーデータ
+   */
   async validateUser(email: string, password: string): Promise<PasswordOmitUser> {
     const user = await this._userService.getCertificationUser(email);
     const isValid = await bcrypt.compareSync(password, user.user.password);
@@ -37,6 +43,11 @@ export class AuthService implements IAuthService {
     }
   }
 
+  /**
+   *ログインする
+   * @param user パスワード以外のユーザーデータ
+   * @returns アクセストークンとユーザーデータ
+   */
   async login(user: PasswordOmitUser): Promise<{
     access_token: string;
     user: PasswordOmitUser;
@@ -59,6 +70,11 @@ export class AuthService implements IAuthService {
     };
   }
 
+  /**
+   *トークンを取得する
+   * @param user パスワード以外のユーザーデータ
+   * @returns トークンデータ
+   */
   async getToken(user: PasswordOmitUser): Promise<{
     tokenVarify: PasswordOmitUser;
     token: string;

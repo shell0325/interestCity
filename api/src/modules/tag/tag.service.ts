@@ -17,12 +17,21 @@ export class TagService implements ITagService {
     private readonly _channels_tagsRepository: Repository<Channels_Tags>,
   ) {}
 
+  /**
+   *全タグデータを取得する
+   * @returns 全タグデータ
+   */
   async getTag(): Promise<TagsResponseDto> {
     const tags = await this._tagRepository.find();
     if (!tags) throw new NotFoundException();
     return { tags };
   }
 
+  /**
+   *タグを登録する
+   * @param tagData 登録するタグデータ
+   * @returns 登録したタグデータ
+   */
   async registerTag(tagData: registerTagRequestDto): Promise<ChannelTagsResponseDto> {
     const channel_tags: Channels_Tags[] = [];
     for (const tagName of tagData.name) {

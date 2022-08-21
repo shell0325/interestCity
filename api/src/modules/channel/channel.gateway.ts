@@ -19,7 +19,6 @@ import { joinChannelRequestDto } from './dto/join-channel.request.dto';
 import { sendThreadCommentRequestDto } from './dto/send-thread-comment.dto';
 import { toggleBookmarkRequestDto } from './dto/toggle-bookmark.request.dto';
 import { toggleLikeRequestDto } from './dto/toggle-like.request.dto';
-import { registerPictureRequestDto } from './dto/register-picture.request.dto';
 import { sendCommentRequestDto } from './dto/send-comment.request.dto';
 
 @WebSocketGateway({

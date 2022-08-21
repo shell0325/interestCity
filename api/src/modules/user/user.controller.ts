@@ -10,6 +10,10 @@ import { certificationUserRequestDto } from './dto/certification-user.request.dt
 export class UserController {
   constructor(private readonly _userService: UserService) {}
 
+  /**
+   *全ユーザーデータを取得する
+   * @returns 全ユーザーデータ
+   */
   @Get()
   async getUsers(): Promise<CommonResponse> {
     let responseData: UsersResponseDto;
@@ -19,13 +23,23 @@ export class UserController {
     return new OkResponse(responseData);
   }
 
+  /**
+   *ユーザーを作成する
+   * @param user 作成するユーザーデータ
+   * @returns 作成後のユーザーデータ
+   */
   @Post()
-  async createUser(@Body() users: createUserRequestDto): Promise<CreatedResponse> {
-    const responseData = await this._userService.createUser(users);
+  async createUser(@Body() user: createUserRequestDto): Promise<CreatedResponse> {
+    const responseData = await this._userService.createUser(user);
 
     return new CreatedResponse(responseData);
   }
 
+  /**
+   *ユーザーを検索する
+   * @param email メールアドレス
+   * @returns メールアドレスで検索したユーザーデータ
+   */
   @Get('email')
   async findUser(@Param('email') email: string): Promise<OkResponse> {
     const responseData = await this._userService.findUser(email);
@@ -33,6 +47,11 @@ export class UserController {
     return new OkResponse(responseData);
   }
 
+  /**
+   *ログアウトする
+   * @param response ログアウトデータ
+   * @returns ログアウト成功メッセージ
+   */
   @Post('logout')
   async logout(@Res({ passthrough: true }) response: Response) {
     response.clearCookie('jwt');
@@ -42,6 +61,11 @@ export class UserController {
     };
   }
 
+  /**
+   *ユーザーを本登録する
+   * @param certificationUser 本登録するユーザーのデータ
+   * @returns 本登録後のユーザーデータ
+   */
   @Post('/certification')
   async certificationUser(@Body() certificationUser: certificationUserRequestDto) {
     const user = await this._userService.certificationUser(certificationUser);

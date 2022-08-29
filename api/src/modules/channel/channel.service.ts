@@ -157,7 +157,8 @@ export class ChannelService implements IChannelService {
       },
       relations: ['user', 'likes', 'bookmark'],
     });
-    comments.sort((a, b) => a.id - b.id);
+    // comments.sort((a, b) => a.id - b.id);
+    comments.sort((a, b) => b.id - a.id);
     return { comments };
   }
 
